@@ -1,16 +1,16 @@
-package com.gmail.bluballsman.mazealgo.tile;
+package com.gmail.bluballsman.mazealgo.maze;
 
 import java.awt.Point;
 import java.util.HashMap;
 
-import com.gmail.bluballsman.mazealgo.maze.Maze;
+import com.gmail.bluballsman.mazealgo.loc.Direction;
 
 public class Tile {
 	private final Maze maze;
 	private final int x;
 	private final int y;
-	private boolean isGround = false;
-	private boolean structureFlag = false;
+	protected boolean isGround = false;
+	protected boolean structureFlag = false;
 	
 	public Tile(Maze maze, int x, int y) {
 		this.maze = maze;
@@ -50,14 +50,22 @@ public class Tile {
 		return maze.getTile(maze.getMirrorPoint(x, y));
 	}
 	
+	public Tile getRelativeTile(int deltaX, int deltaY) {
+		return maze.getTile(x + deltaX, y + deltaY);
+	}
+	
+	public Tile getRelativeTile(Direction d) {
+		return getRelativeTile(d.X_OFFSET, d.Y_OFFSET);
+	}
+	
 	public void setGround(boolean isGround) {
-		this.isGround = isGround;
+		maze.setGround(x, y, isGround);
 	}
 	
 	public void setStructureFlag(boolean structureFlag) {
-		this.structureFlag = structureFlag;
+		maze.setStructureFlag(x, y, structureFlag);
 	}
-	
+		
 	// Returns the "type code" for this tile. The type code is a representation of the surrounding tiles on the north, east, south, and west sides
 	// of this tile. If a surrounding tile match this tile's ground flag, it is represented as a "1", otherwise as "0". 
 	// These bits are represented in the type code from left to right as north, east, south, west. So a type code of 1010 means that the ground flag

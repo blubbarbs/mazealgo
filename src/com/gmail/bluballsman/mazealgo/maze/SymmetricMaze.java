@@ -65,7 +65,6 @@ public class SymmetricMaze extends Maze {
 		return matches;
 	}
 	
-	
 	@Override
 	public StructureSlot placeStructure(String strucPattern) {
 		StructureSlot s = super.placeStructure(strucPattern);

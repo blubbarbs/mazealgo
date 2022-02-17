@@ -1,6 +1,6 @@
 package com.gmail.bluballsman.mazealgo.structure;
 
-import com.gmail.bluballsman.mazealgo.tile.Tile;
+import com.gmail.bluballsman.mazealgo.maze.Tile;
 
 public enum BlueprintCharacter {
 	GROUND('1'),

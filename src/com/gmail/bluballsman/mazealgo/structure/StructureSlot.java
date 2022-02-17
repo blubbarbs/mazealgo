@@ -3,7 +3,7 @@ package com.gmail.bluballsman.mazealgo.structure;
 import java.awt.Point;
 
 import com.gmail.bluballsman.mazealgo.maze.Maze;
-import com.gmail.bluballsman.mazealgo.tile.Tile;
+import com.gmail.bluballsman.mazealgo.maze.Tile;
 
 public class StructureSlot {
 	private Maze maze;

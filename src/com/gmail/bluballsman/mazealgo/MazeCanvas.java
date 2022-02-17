@@ -6,9 +6,11 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Collection;
 
+import com.gmail.bluballsman.mazealgo.maze.Maze;
 import com.gmail.bluballsman.mazealgo.maze.SymmetricMaze;
-import com.gmail.bluballsman.mazealgo.tile.Tile;
+import com.gmail.bluballsman.mazealgo.maze.Tile;
 
 public class MazeCanvas extends Canvas {
 	private static final long serialVersionUID = 1L;
@@ -16,7 +18,7 @@ public class MazeCanvas extends Canvas {
 	private int mazeWidth;
 	private int mazeHeight;
 	private int tileSize;
-	private SymmetricMaze maze;
+	private Maze maze;
 	
 	public MazeCanvas(int mazeWidth, int mazeHeight, int tileSize) {
 		this.mazeWidth = mazeWidth;
@@ -30,13 +32,11 @@ public class MazeCanvas extends Canvas {
 	public void paint(Graphics g) {
 		long millis = System.currentTimeMillis();
 		maze = new SymmetricMaze(mazeWidth, mazeHeight);
-		maze.markCenter();
-		maze.drawStartingPositions();
-		maze.testRooms();
 		maze.fillMaze();
-		maze.drawCenter();
-		maze.knockDownWalls(.08F);
-		maze.testStructures();
+		maze.knockDownWalls(8);
+		Collection<Point> path = maze.findPath(new Point(1, 1), new Point(1, 5));
+
+		System.out.println("Path: " + path.toString());
 		System.out.println("Time: " + (System.currentTimeMillis() - millis));
 
 		for(int y = 0; y < maze.getHeight(); y++) {

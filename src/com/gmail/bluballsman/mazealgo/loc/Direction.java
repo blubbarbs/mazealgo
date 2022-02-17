@@ -13,5 +13,5 @@ public enum Direction {
 		X_OFFSET = xOffset;
 		Y_OFFSET = yOffset;
 	}
-	
+		
 }

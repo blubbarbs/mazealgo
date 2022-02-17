@@ -2,12 +2,16 @@ package com.gmail.bluballsman.mazealgo.maze;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Stack;
+import java.util.function.Predicate;
 
 import com.gmail.bluballsman.mazealgo.loc.Direction;
+import com.gmail.bluballsman.mazealgo.pathfinding.AStarComparator;
 import com.gmail.bluballsman.mazealgo.structure.StructureSlot;
-import com.gmail.bluballsman.mazealgo.tile.Tile;
 
 public class Maze {
 	protected int width;
@@ -64,6 +68,14 @@ public class Maze {
 		return isGround(p.x, p.y);
 	}
 	
+	public boolean isValidPoint(int x, int y) {
+		return x >= 0 && x < width && y >= 0 && y < height;
+	}
+	
+	public boolean isValidPoint(Point p) {
+		return isValidPoint(p.x, p.y);
+	}
+	
 	public boolean isStructure(int x, int y) {
 		Tile t = getTile(x, y);
 		
@@ -75,11 +87,34 @@ public class Maze {
 	}
 	
 	public Tile getTile(int x, int y) {
-		return (x >= 0 && x < width && y >= 0 && y < height) ? tiles[x][y] : null;
+		return isValidPoint(x, y) ? tiles[x][y] : null;
 	}
 	
 	public Tile getTile(Point p) {
 		return getTile(p.x, p.y);
+	}
+	
+	public ArrayList<Point> getSurroundingPoints(Point p, int delta, Predicate<Point> predicate) {
+		predicate = predicate != null ? predicate : (dummy) -> true;
+		ArrayList<Point> points = new ArrayList<Point>();
+		
+		for (Direction d : Direction.values()) {
+			Point offsetPoint = new Point(p.x + d.X_OFFSET, p.y + d.Y_OFFSET);
+			
+			if(isValidPoint(offsetPoint) && predicate.test(offsetPoint)) {
+				points.add(offsetPoint);
+			}
+		}
+		
+		return points;
+	}
+	
+	public ArrayList<Point> getSurroundingPoints(Point p, Predicate<Point> predicate) {
+		return getSurroundingPoints(p, 1, predicate);
+	}
+	
+	public ArrayList<Point> getSurroundingPoints(Point p) {
+		return getSurroundingPoints(p, 1, null);
 	}
 	
 	public Point freeRandomEvenPoint(int minX, int minY, int maxX, int maxY) {
@@ -173,7 +208,7 @@ public class Maze {
 	}
 	
 	public void setGround(int x, int y, boolean isGround) {
-		tiles[x][y].setGround(isGround);
+		tiles[x][y].isGround = isGround;
 	}
 	
 	public void setGround(Point p, boolean isGround) {
@@ -181,7 +216,7 @@ public class Maze {
 	}
 	
 	public void setStructureFlag(int x, int y, boolean isStructure) {
-		tiles[x][y].setStructureFlag(isStructure);
+		tiles[x][y].structureFlag = isStructure;
 	}
 	
 	public void setStructureFlag(Point p, boolean isStructure) {
@@ -223,7 +258,70 @@ public class Maze {
 				currentPoint = path.pop();
 			}
 		}
+	}
+	
+	public Stack<Point> findPath(Point start, Point finish) {
+		// Tiles available to explore, order determined by A* heuristic
+		PriorityQueue<Point> openNodes = new PriorityQueue<Point>(new AStarComparator(start, finish));
+		// Previous point before current point is discovered, used to reconstruct the final path. Keys are nodes that have been discovered
+		HashMap<Point, Point> nodeParents = new HashMap<Point, Point>();
+		openNodes.add(start);
+		nodeParents.put(start, null);
 		
+		while (!openNodes.isEmpty()) {
+			Point current = openNodes.poll();
+			
+			if(current.equals(finish)) {
+				break;
+			}
+
+			ArrayList<Point> validNeighbors = getSurroundingPoints(current, 1, (p) -> isGround(p) && !nodeParents.containsKey(p));
+			
+			for (Point p : validNeighbors) {
+				openNodes.add(p);
+				nodeParents.put(p, current);
+			}
+		}
+		
+		// Reconstructing path after A* search is done
+		if(nodeParents.containsKey(finish)) {
+			Stack<Point> path = new Stack<Point>();
+			
+			Point current = finish;
+			while (current != start) {
+				path.add(current);
+				current = nodeParents.get(current);
+			}
+
+			path.add(start);
+			return path;
+		}
+		else {
+			return null;
+		}
+	}
+	
+	public void knockDownWalls(int cutoffLength) {
+		ArrayList<Point> deletableWalls = new ArrayList<Point>();
+		
+		for(int y = 1; y < height - 1; y++) {
+			for(int x = 1 + (y % 2); x < width - 1; x+=2) {
+				if(!isGround(x, y)) {
+					deletableWalls.add(new Point(x, y));
+				}
+			}
+		}
+
+		Collections.shuffle(deletableWalls);
+		
+		for(Point wall : deletableWalls) {
+			ArrayList<Point> neighbors = getSurroundingPoints(wall, (p) -> isGround(p));
+			Stack<Point> shortestPath = findPath(neighbors.get(0), neighbors.get(1));
+			
+			if (shortestPath.size() >= cutoffLength) {
+				setGround(wall, true);
+			}
+		}
 	}
 	
 	public void knockDownWalls(float openWallPercentage) {
