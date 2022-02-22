@@ -54,46 +54,27 @@ public class MazeCanvas extends Canvas {
 				}
 			}
 		}
-		
 	}
 	
 	@Override
 	public void paint(Graphics g) {
 		long millis = System.currentTimeMillis();
 		maze = new Maze(mazeWidth, mazeHeight);
-		Structure testStructure = new Structure("01000.01110.01110.01110.00000");
-		Structure testStructure2 = new Structure("000.010.010");
-		Structure testStructure3 = new Structure("000.011.010.010.010.010.010.010.010");
-		maze.placeStructure(testStructure);
-		maze.placeStructure(testStructure);
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);		
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);
-		maze.placeStructure(testStructure2);				
-		maze.placeStructure(testStructure3);
+		Structure room = new Structure("01000.01110.01110.01110.00010");
+		Structure deadEnd = new Structure("000.010.010");
+		Structure hall = new Structure("000.011.010.010.010.010.010.010.010");
+		for(int i = 0; i < 3; i++) {
+			maze.placeStructure(room);
+		}		
+		for(int i = 0; i < 16; i++) {
+			maze.placeStructure(deadEnd);
+		}
+		for(int i = 0; i < 3; i++) {
+			maze.placeStructure(hall);
+		}
 		
 		maze.fillMaze(new Point(1, 1));
 		maze.knockDownWalls(45);
-		Collection<Point> path = maze.findPath(new Point(1, 1), maze.getCenterPoint());
-		
-		if(path != null) {
-			System.out.println("Path: " + path.toString());
-		}
-		else {
-			System.out.println("No Path");
-		}
 		
 		System.out.println("Time: " + (System.currentTimeMillis() - millis));
 
@@ -104,6 +85,7 @@ public class MazeCanvas extends Canvas {
 				
 				if(t.isStructure()) {
 					color = t.isGround() ? new Color(255, 255, 255) : new Color(255, 0, 0);
+					color = t.isGround() ? new Color(255, 255, 255) : new Color(0, 0, 0);
 				}
 				else {
 					color = t.isGround() ? new Color(255, 255, 255) : new Color(0, 0, 0);

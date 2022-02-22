@@ -71,6 +71,14 @@ public class Maze {
 		return x >= 0 && x < width && y >= 0 && y < height;
 	}
 	
+	public boolean isEdge(int x, int y) {
+		return x == 0 || x == width - 1 || y == 0 || y == height - 1;
+	}
+	
+	public boolean isEdge(Point p) {
+		return isEdge(p.x, p.y);
+	}
+	
 	public boolean isValidPoint(Point p) {
 		return isValidPoint(p.x, p.y);
 	}
@@ -165,8 +173,10 @@ public class Maze {
 		for(int y = 0; y < s.height; y++) {
 			for(int x = 0; x < s.width; x++) {
 				Point rel = new Point(p.x + x, p.y + y);
+				char symbol = s.blueprint[x][y];
+				boolean overwrites = (symbol == '1' && !isGround(rel)) || (symbol == '0' && isGround(rel));				
 				
-				if(isStructure(rel)) {
+				if(isStructure(rel) || (isEdge(rel) && overwrites)) {
 					return false;
 				}
 			}
@@ -178,8 +188,8 @@ public class Maze {
 	public ArrayList<StructureEntry> findMatches(Structure s) {
 		ArrayList<StructureEntry> matches = new ArrayList<StructureEntry>();
 		
-		for(int y = 2; y < height - s.height - 2; y+=2) {
-			for(int x = 2; x < width - s.width - 2; x+=2) {
+		for(int y = 0; y <= height - s.height; y+=2) {
+			for(int x = 0; x <= width - s.width; x+=2) {
 				Point p = new Point(x, y);
 				
 				if(canPlaceStructure(p, s)) {
@@ -196,13 +206,9 @@ public class Maze {
 		ArrayList<StructureEntry> entries = new ArrayList<StructureEntry>();
 		Structure current = s.clone();
 		
-		System.out.println("----------------------");
-		
 		// Finding all the different slots where the structure fits per rotation
 		for(int rotations = 0; rotations < 4; rotations++) {
 			entries.addAll(findMatches(current));
-			
-			System.out.println(current.toString());
 			
 			current = current.rotate(1);
 		}
