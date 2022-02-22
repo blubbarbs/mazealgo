@@ -29,12 +29,42 @@ public class MazeCanvas extends Canvas {
 		setSize(mazeWidth * tileSize, mazeHeight * tileSize);
 	}
 	
+	public void paintTile(Graphics g, int x, int y, Color color) {
+		int paintX = tileSize * x;
+		int paintY = tileSize * y;
+		
+		g.setColor(color);
+		g.fillRect(paintX, paintY, tileSize, tileSize);		
+	}
+	
+	public void paintGridLayer(Graphics g) {
+		for(int y = 0; y < maze.getHeight(); y++) {
+			for(int x = 0; x < maze.getWidth(); x++) {		
+				boolean isGuaranteedWall = x % 2 == 0 && y % 2 == 0;
+				boolean isGuaranteedGround = x % 2 == 1 && y % 2 == 1;
+			
+				if(isGuaranteedWall) {
+					paintTile(g, x, y, new Color(255, 255, 255, 50));
+				}				
+				else if(isGuaranteedGround) {
+					paintTile(g, x, y, new Color(255, 255, 255, 210));					
+				}
+				else {
+					paintTile(g, x, y, new Color(255, 255, 255, 127));					
+				}
+			}
+		}
+		
+	}
+	
 	@Override
 	public void paint(Graphics g) {
 		long millis = System.currentTimeMillis();
-		maze = new SymmetricMaze(mazeWidth, mazeHeight);
-		Structure testStructure = new Structure("00000.01110.01110.01110.00000");
+		maze = new Maze(mazeWidth, mazeHeight);
+		Structure testStructure = new Structure("01000.01110.01110.01110.00000");
 		Structure testStructure2 = new Structure("000.010.010");
+		Structure testStructure3 = new Structure("000.011.010.010.010.010.010.010.010");
+		maze.placeStructure(testStructure);
 		maze.placeStructure(testStructure);
 		maze.placeStructure(testStructure2);
 		maze.placeStructure(testStructure2);
@@ -43,9 +73,19 @@ public class MazeCanvas extends Canvas {
 		maze.placeStructure(testStructure2);
 		maze.placeStructure(testStructure2);
 		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);
 		maze.placeStructure(testStructure2);		
+		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);				
+		maze.placeStructure(testStructure3);
+		
 		maze.fillMaze(new Point(1, 1));
-		//maze.knockDownWalls(45);
+		maze.knockDownWalls(45);
 		Collection<Point> path = maze.findPath(new Point(1, 1), maze.getCenterPoint());
 		
 		if(path != null) {
@@ -59,36 +99,21 @@ public class MazeCanvas extends Canvas {
 
 		for(int y = 0; y < maze.getHeight(); y++) {
 			for(int x = 0; x < maze.getWidth(); x++) {
-				int paintX = tileSize * x;
-				int paintY = tileSize * y;
 				Tile t = maze.getTile(x, y);
-				boolean isGuaranteedWall = x % 2 == 0 && y % 2 == 0;
-				boolean isGuaranteedGround = x % 2 == 1 && y % 2 == 1;
 				Color color = null;
 				
-				if(!t.isGround()) {
-					if(isGuaranteedWall) {
-						color = new Color(50, 50, 50);
-					}
-					else if(isGuaranteedGround) {
-						color = new Color(210, 210, 210);
-					}
-					else {
-						color = new Color(127, 127, 127);
-					}
+				if(t.isStructure()) {
+					color = t.isGround() ? new Color(255, 255, 255) : new Color(255, 0, 0);
 				}
 				else {
-					color = new Color(255, 255, 255);
+					color = t.isGround() ? new Color(255, 255, 255) : new Color(0, 0, 0);
 				}
 				
-				
-				g.setColor(color);
-				g.fillRect(paintX, paintY, tileSize, tileSize);
+				paintTile(g, x, y, color);
 			}
 		}
-		Point centerPoint = maze.getCenterPoint();
-		g.setColor(new Color(255, 0, 0));
-		g.fillRect(centerPoint.x * tileSize, centerPoint.y * tileSize, tileSize, tileSize);
+		
+		paintGridLayer(g);
 	}
 	
 	

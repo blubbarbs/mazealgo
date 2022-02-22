@@ -1,32 +1,41 @@
 package com.gmail.bluballsman.mazealgo.structure;
 
+import java.util.Random;
+
 public class Structure {
 	public final int width;
 	public final int height;
-	public final int rotations;
 	public final char[][] blueprint;
 	
-	
-	public Structure(String strucString) {
+	public Structure(String strucString, Random r) {
 		String[] lines = strucString.split("[.]");
 		
 		width = lines[0].length();
 		height = lines.length;
 		blueprint = new char[width][height];
-		rotations = 0;
 		
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
-				 blueprint[x][y] = lines[y].charAt(x);
+				char c = lines[y].charAt(x);
+				
+				if(c != '?') {
+					blueprint[x][y] = c;
+				}
+				else {
+					blueprint[x][y] = r.nextBoolean() ? '1' : '0';
+				}
 			}
 		}
 	}
 	
-	public Structure(char[][] blueprint, int rotations) {
+	public Structure(String strucString) {
+		this(strucString, new Random());
+	}
+	
+	public Structure(char[][] blueprint) {
 		this.blueprint = blueprint;
-		this.rotations = rotations;
-		width =  blueprint[0].length;
-		height = blueprint.length;
+		width =  blueprint.length;
+		height = blueprint[0].length;
 	}
 	
 	public Structure rotate(int rotations) {
@@ -68,7 +77,7 @@ public class Structure {
 			newBlueprint = new char[width][height];
 			
 			for(int y = 0; y < height; y++) {
-				for(int x = 0; x < height; x++) {
+				for(int x = 0; x < width; x++) {
 					newBlueprint[x][y] = blueprint[x][y];
 				}
 			}
@@ -76,13 +85,27 @@ public class Structure {
 			break;
 		}
 				
-		return new Structure(newBlueprint, (this.rotations + rotations) % 4);
+		return new Structure(newBlueprint);
 	}
 
 	
 	@Override
 	public Structure clone() {
 		return rotate(0);
+	}
+	
+	@Override
+	public String toString() {
+		String s = "";
+		for(int y = 0; y < height; y++) {
+			for(int x = 0; x < width; x++) {
+				 s += blueprint[x][y];
+			}
+			
+			s += "\n";
+		}		
+	
+		return s;
 	}
 	
 }

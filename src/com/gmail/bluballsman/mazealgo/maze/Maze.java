@@ -165,11 +165,8 @@ public class Maze {
 		for(int y = 0; y < s.height; y++) {
 			for(int x = 0; x < s.width; x++) {
 				Point rel = new Point(p.x + x, p.y + y);
-				Tile t = getTile(rel);
-				char symbol = s.blueprint[x][y];
-				boolean doesntOverwrite = symbol == 'X' || (!t.isGround && symbol == '0') || (t.isGround && symbol == '1');
 				
-				if((t.isStructure() && !doesntOverwrite)) {
+				if(isStructure(rel)) {
 					return false;
 				}
 			}
@@ -199,16 +196,21 @@ public class Maze {
 		ArrayList<StructureEntry> entries = new ArrayList<StructureEntry>();
 		Structure current = s.clone();
 		
+		System.out.println("----------------------");
+		
 		// Finding all the different slots where the structure fits per rotation
 		for(int rotations = 0; rotations < 4; rotations++) {
 			entries.addAll(findMatches(current));
 			
-			current = s.rotate(1);
+			System.out.println(current.toString());
+			
+			current = current.rotate(1);
 		}
 		
 		if(entries.isEmpty()) {
 			return;
 		}
+				
 		
 		// Selecting random entry out of all the entries
 		int randomIndex = random.nextInt(entries.size());
@@ -328,7 +330,7 @@ public class Maze {
 		
 		for(int y = 1; y < height - 1; y++) {
 			for(int x = 1 + (y % 2); x < width - 1; x+=2) {
-				if(!isGround(x, y)) {
+				if(!isGround(x, y) && !isStructure(x, y)) {
 					deletableWalls.add(new Point(x, y));
 				}
 			}
