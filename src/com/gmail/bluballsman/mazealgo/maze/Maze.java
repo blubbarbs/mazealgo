@@ -161,44 +161,6 @@ public class Maze {
 		return getSurroundingPoints(p, 1, null);
 	}
 	
-	public Point freeRandomEvenPoint(int minX, int minY, int maxX, int maxY) {
-		minX = minX % 2 == 0 ? minX : minX + 1;
-		minY = minY % 2 == 0 ? minY : minY + 1;
-		maxX = maxX % 2 == 0 ? maxX : maxX - 1;
-		maxY = maxY % 2 == 0 ? maxY : maxY - 1;
-		
-		Point p = new Point();
-		int nEvensX = ((maxX - minX) / 2) + 1;
-		int nEvensY = ((maxY - minY) / 2) + 1;
-		
-		do {
-			p.x = 2 * random.nextInt(nEvensX) + minX;
-			p.y = 2 * random.nextInt(nEvensY) + minY;
-		} 
-		while(isStructure(p));
-
-		return p;
-	}
-	
-	public Point freeRandomOddPoint(int minX, int minY, int maxX, int maxY) {
-		minX = minX % 2 == 1 ? minX : minX + 1;
-		minY = minY % 2 == 1 ? minY : minY + 1;
-		maxX = maxX % 2 == 1 ? maxX : maxX - 1;
-		maxY = maxY % 2 == 1 ? maxY : maxY - 1;
-		
-		Point p = new Point();
-		int nOddsX = ((maxX - minX) / 2) + 1;
-		int nOddsY = ((maxY - minY) / 2) + 1;
-		
-		do {
-			p.x = (2 * random.nextInt(nOddsX)) + minX;
-			p.y = (2 * random.nextInt(nOddsY)) + minY;
-		} 
-		while(isStructure(p));
-		
-		return p;
-	}
-	
 	public boolean canPlaceStructure(Point p, Structure s) {
 		for(int y = 0; y < s.height; y++) {
 			for(int x = 0; x < s.width; x++) {
@@ -260,8 +222,6 @@ public class Maze {
 				Point rel = new Point(selectedPoint.x + x, selectedPoint.y + y);
 				char symbol = selectedStructure.blueprint[x][y];
 				
-				System.out.println(symbol);
-				
 				switch(symbol) {
 				case '0':
 					setGround(rel, false);
@@ -298,8 +258,7 @@ public class Maze {
 		setStructureFlag(p.x, p.y, isStructure);
 	}
 	
-	public void fillMaze() {
-		Point start = freeRandomOddPoint(1, 1, width - 1, height - 1);
+	public void fillMaze(Point start) {
 		Stack<Point> path = new Stack<Point>();
 		
 		path.push(start);
@@ -388,7 +347,6 @@ public class Maze {
 		
 		return deletedWalls;
 	}	
-	
 	
 	// Performs an action for each point within a point range [start, end]. Both inclusive.
 	public void forEach(Point start, Point end, Consumer<Point> action) {

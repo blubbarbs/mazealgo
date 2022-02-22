@@ -32,8 +32,7 @@ public class SymmetricMaze extends Maze {
 	// Identical to normal maze generation except that because of the symmetry, the two symmetrical paths
 	// must be forcibly reunited. The first time they meet, the path between them will open.
 	@Override
-	public void fillMaze() {
-		Point start = freeRandomOddPoint(1, 1, width - 1, height - 1);
+	public void fillMaze(Point start) {
 		HashSet<Point> allVisitedPoints = new HashSet<Point>();
 		Stack<Point> path = new Stack<Point>();
 		boolean hasConnected = false;

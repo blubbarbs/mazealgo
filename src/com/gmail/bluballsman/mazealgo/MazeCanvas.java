@@ -44,7 +44,7 @@ public class MazeCanvas extends Canvas {
 		maze.placeStructure(testStructure2);
 		maze.placeStructure(testStructure2);
 		maze.placeStructure(testStructure2);		
-		maze.fillMaze();
+		maze.fillMaze(new Point(1, 1));
 		//maze.knockDownWalls(45);
 		Collection<Point> path = maze.findPath(new Point(1, 1), maze.getCenterPoint());
 		
