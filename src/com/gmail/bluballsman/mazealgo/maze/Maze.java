@@ -7,18 +7,17 @@ import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Stack;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import com.gmail.bluballsman.mazealgo.loc.Direction;
 import com.gmail.bluballsman.mazealgo.pathfinding.AStarComparator;
-import com.gmail.bluballsman.mazealgo.structure.StructureSlot;
+import com.gmail.bluballsman.mazealgo.structure.Structure;
 
 public class Maze {
 	protected int width;
 	protected int height;
 	protected Tile[][] tiles;
-	protected ArrayList<StructureSlot> structures = new ArrayList<StructureSlot>();
-	protected StructureSlot centerSlot;
+	protected HashMap<Point, Structure> structuresNew = new HashMap<Point, Structure>();
 	protected Random random = new Random();
 	
 	public Maze(int width, int height) {
@@ -28,7 +27,7 @@ public class Maze {
 		
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
-				tiles[x][y] = new Tile(this, x, y);
+				tiles[x][y] = new Tile();
 			}
 		}
 	}
@@ -82,6 +81,39 @@ public class Maze {
 		return t != null && t.isStructure();
 	}
 	
+	// Returns the "type code" for this point. The type code is a representation of the surrounding tiles on the north, east, south, and west sides
+	// of this tile. If a surrounding tile match this tile's ground flag, it is represented as a "1", otherwise as "0". 
+	// These bits are represented in the type code from left to right as north, east, south, west. So a type code of 1010 means that the ground flag
+	// of the surrounding tiles matched this tile in the north and south positions. Out of bounds tiles are counted as ground.	
+	public int getTypeCode(Point p) {
+		Point north = new Point(p.x, p.y + 1);
+		Point east = new Point(p.x + 1, p.y);
+		Point south = new Point(p.x, p.y - 1);
+		Point west = new Point(p.x - 1, p.y);
+		
+		boolean tileIsGround = isValidPoint(p) && isGround(p);
+		boolean northIsGround = isValidPoint(north) && isGround(north);
+		boolean eastIsGround = isValidPoint(east) && isGround(east);
+		boolean southIsGround = isValidPoint(south) && isGround(south);
+		boolean westIsGround = isValidPoint(west) && isGround(west);
+		
+		int typeCode = 0;
+		typeCode += northIsGround == tileIsGround ? 0b1000 : 0;
+		typeCode += eastIsGround == tileIsGround ? 0b0100 : 0;
+		typeCode += southIsGround == tileIsGround ? 0b0010 : 0;
+		typeCode += westIsGround == tileIsGround ? 0b0001 : 0;
+		
+		return typeCode;		
+	}
+	
+	public Tile.Type getTileType(Point p) {
+		return Tile.Type.getType(getTypeCode(p));
+	}
+	
+	public int getTileRotations(Point p) {
+		return Tile.Type.getRotations(getTypeCode(p));
+	}
+		
 	public boolean isStructure(Point p) {
 		return isStructure(p.x, p.y);
 	}
@@ -94,18 +126,30 @@ public class Maze {
 		return getTile(p.x, p.y);
 	}
 	
-	public ArrayList<Point> getSurroundingPoints(Point p, int delta, Predicate<Point> predicate) {
+	public ArrayList<Point> getSurroundingPoints(Point p, int offset, Predicate<Point> predicate) {
 		predicate = predicate != null ? predicate : (dummy) -> true;
 		ArrayList<Point> points = new ArrayList<Point>();
+		Point north = new Point(p.x, p.y + offset);
+		Point east = new Point(p.x + offset, p.y);
+		Point south = new Point(p.x, p.y - offset);
+		Point west = new Point(p.x - offset, p.y);	
 		
-		for (Direction d : Direction.values()) {
-			Point offsetPoint = new Point(p.x + d.X_OFFSET, p.y + d.Y_OFFSET);
-			
-			if(isValidPoint(offsetPoint) && predicate.test(offsetPoint)) {
-				points.add(offsetPoint);
-			}
+		if(isValidPoint(north) && predicate.test(north)) {
+			points.add(north);
 		}
 		
+		if(isValidPoint(east) && predicate.test(east)) {
+			points.add(east);
+		}
+
+		if(isValidPoint(south) && predicate.test(south)) {
+			points.add(south);
+		}
+
+		if(isValidPoint(west) && predicate.test(west)) {
+			points.add(west);
+		}
+
 		return points;
 	}
 	
@@ -155,19 +199,32 @@ public class Maze {
 		return p;
 	}
 	
-	public ArrayList<StructureSlot> findMatches(String strucPattern) {
-		ArrayList<StructureSlot> matches = new ArrayList<StructureSlot>();
-		StructureSlot s = new StructureSlot(this, strucPattern);
+	public boolean canPlaceStructure(Point p, Structure s) {
+		for(int y = 0; y < s.height; y++) {
+			for(int x = 0; x < s.width; x++) {
+				Point rel = new Point(p.x + x, p.y + y);
+				Tile t = getTile(rel);
+				char symbol = s.blueprint[x][y];
+				boolean doesntOverwrite = symbol == 'X' || (!t.isGround && symbol == '0') || (t.isGround && symbol == '1');
+				
+				if((t.isStructure() && !doesntOverwrite)) {
+					return false;
+				}
+			}
+		}
 		
-		for(int rotations = 0; rotations < 4; rotations++) {
-			s.rotate(1);
-			for(int y = 0; y < height - s.getHeight(); y++) {
-				for(int x = 0; x < width - s.getWidth(); x++) {
-					s.setLocation(x, y);
-					
-					if(s.canPlace()) {
-						matches.add(s.clone());
-					}
+		return true;
+	}
+	
+	public ArrayList<StructureEntry> findMatches(Structure s) {
+		ArrayList<StructureEntry> matches = new ArrayList<StructureEntry>();
+		
+		for(int y = 2; y < height - s.height - 2; y+=2) {
+			for(int x = 2; x < width - s.width - 2; x+=2) {
+				Point p = new Point(x, y);
+				
+				if(canPlaceStructure(p, s)) {
+					matches.add(new StructureEntry(p, s));
 				}
 			}
 		}
@@ -175,38 +232,56 @@ public class Maze {
 		return matches;
 	}
 	
-	public StructureSlot placeStructure(String strucPattern) {
-		ArrayList<StructureSlot> matches = findMatches(strucPattern);
+	
+	public void placeStructure(Structure s) {
+		ArrayList<StructureEntry> entries = new ArrayList<StructureEntry>();
+		Structure current = s.clone();
 		
-		if(matches.size() == 0) {
-			return null;
-		}
-		else {
-			StructureSlot chosenSlot = matches.get(random.nextInt(matches.size()));
-			chosenSlot.markStructureTiles();
-			structures.add(chosenSlot);
+		// Finding all the different slots where the structure fits per rotation
+		for(int rotations = 0; rotations < 4; rotations++) {
+			entries.addAll(findMatches(current));
 			
-			return chosenSlot;
+			current = s.rotate(1);
+		}
+		
+		if(entries.isEmpty()) {
+			return;
+		}
+		
+		// Selecting random entry out of all the entries
+		int randomIndex = random.nextInt(entries.size());
+		StructureEntry randomEntry = entries.get(randomIndex);
+		Structure selectedStructure = randomEntry.structure;
+		Point selectedPoint = randomEntry.point;
+		
+		// Actually placing the structure. a "0" = wall, "1" = ground, "?" = random 
+		for(int y = 0; y < selectedStructure.height; y++) {
+			for(int x = 0; x < selectedStructure.width; x++) {
+				Point rel = new Point(selectedPoint.x + x, selectedPoint.y + y);
+				char symbol = selectedStructure.blueprint[x][y];
+				
+				System.out.println(symbol);
+				
+				switch(symbol) {
+				case '0':
+					setGround(rel, false);
+					setStructureFlag(rel, true);
+					break;
+				case '1':
+					setGround(rel, true);
+					setStructureFlag(rel, true);
+					break;
+				case '?':
+					setGround(rel, random.nextBoolean());
+					setStructureFlag(rel, true);
+					break;
+				default:
+					break;
+				}
+			}
 		}
 	}
-	
-	public StructureSlot excavateRoom(String roomPattern) {
-		Point randomEven;
-		StructureSlot roomSlot = new StructureSlot(this, roomPattern, random.nextInt(4));
 		
-		do { 
-			randomEven = freeRandomEvenPoint(1, 1, width - 1 - roomSlot.getWidth(), height - 1 - roomSlot.getHeight());
-			roomSlot.setLocation(randomEven);
-		}
-		while(roomSlot.doesSlotHaveStructure());
-		
-		roomSlot.markStructureTiles();
-		roomSlot.drawStructureTiles();
-		structures.add(roomSlot);
-		
-		return roomSlot;
-	}
-	
 	public void setGround(int x, int y, boolean isGround) {
 		tiles[x][y].isGround = isGround;
 	}
@@ -224,35 +299,22 @@ public class Maze {
 	}
 	
 	public void fillMaze() {
-		Point currentPoint = freeRandomOddPoint(1, 1, width - 1, height - 1);
+		Point start = freeRandomOddPoint(1, 1, width - 1, height - 1);
 		Stack<Point> path = new Stack<Point>();
-		path.push(currentPoint);
-		setGround(currentPoint, true);
+		
+		path.push(start);
+		setGround(start, true);
 		
 		while(!path.isEmpty()) {
-			ArrayList<Direction> availableDirections = new ArrayList<Direction>();
+			Point currentPoint = path.peek();
+			ArrayList<Point> availablePoints = getSurroundingPoints(currentPoint, 2, point -> !isGround(point));
 			
-			if(!isGround(currentPoint.x, currentPoint.y + 2)) {
-				availableDirections.add(Direction.NORTH);
-			}
-			if(!isGround(currentPoint.x + 2, currentPoint.y)) {
-				availableDirections.add(Direction.EAST);
-			}
-			if(!isGround(currentPoint.x, currentPoint.y - 2)) {
-				availableDirections.add(Direction.SOUTH);
-			}
-			if(!isGround(currentPoint.x - 2, currentPoint.y)) {
-				availableDirections.add(Direction.WEST);
-			}
-			
-			if(!availableDirections.isEmpty()) {
-				Direction chosenDirection = availableDirections.get(random.nextInt(availableDirections.size()));
+			if(!availablePoints.isEmpty()) {
+				int chosenIndex = random.nextInt(availablePoints.size());
+				Point chosenPoint = availablePoints.get(chosenIndex);
 				
-				currentPoint.translate(chosenDirection.X_OFFSET, chosenDirection.Y_OFFSET);
-				setGround(currentPoint, true);
-				currentPoint.translate(chosenDirection.X_OFFSET, chosenDirection.Y_OFFSET);
-				setGround(currentPoint, true);
-				path.push(new Point(currentPoint));
+				forEach(chosenPoint, currentPoint, point -> setGround(point, true));
+				path.push(chosenPoint);
 			}
 			else {
 				currentPoint = path.pop();
@@ -301,8 +363,9 @@ public class Maze {
 		}
 	}
 	
-	public void knockDownWalls(int cutoffLength) {
+	public ArrayList<Point> knockDownWalls(int cutoffLength) {
 		ArrayList<Point> deletableWalls = new ArrayList<Point>();
+		ArrayList<Point> deletedWalls = new ArrayList<Point>();
 		
 		for(int y = 1; y < height - 1; y++) {
 			for(int x = 1 + (y % 2); x < width - 1; x+=2) {
@@ -322,57 +385,24 @@ public class Maze {
 				setGround(wall, true);
 			}
 		}
-	}
-	
-	public void knockDownWalls(float openWallPercentage) {
-		ArrayList<Point> availableWalls = new ArrayList<Point>();
 		
-		// All the available walls to knock down are on points where x and y are even and odd
-		// but not both. That's what (1 + y % 2) is for, it makes it so that x starts on an even number if y is odd
-		// and vice versa
-		for(int y = 1; y < height - 1; y++) {
-			for(int x = 1 + y % 2; x < width - 1; x+=2) {
-				if(!isGround(x, y) && !isStructure(x, y)) {
-					availableWalls.add(new Point(x, y));
-				}
+		return deletedWalls;
+	}	
+	
+	
+	// Performs an action for each point within a point range [start, end]. Both inclusive.
+	public void forEach(Point start, Point end, Consumer<Point> action) {
+		int minX = Math.min(start.x, end.x);
+		int minY = Math.min(start.y, end.y);
+		int maxX = Math.max(start.x, end.x);
+		int maxY = Math.max(start.y, end.y);
+		
+		for(int x = minX; x <= maxX; x++) {
+			for(int y = minY; y <= maxY; y++) {
+				Point p = new Point(x, y);
+				
+				action.accept(p);
 			}
 		}
-		
-		int wallsToDestroy = Math.round(availableWalls.size() * openWallPercentage);
-		for(int i = 0; i < wallsToDestroy; i++) {
-			Point randomWall = availableWalls.get(random.nextInt(availableWalls.size()));
-			
-			availableWalls.remove(randomWall);
-			setGround(randomWall, true);
-		}
-	}
-	
-	public void markCenter() {
-		String centerBlueprint = "XX11111XX.X1111111X.111111111.111111111.111111111.111111111.111111111.X1111111X.XX11111XX";
-		centerSlot = new StructureSlot(this, centerBlueprint);
-		int radius = (centerSlot.getWidth() / 2);
-		Point center = getCenterPoint();
-		Point corner = new Point(center.x - radius, center.y - radius);
-		
-		centerSlot.setLocation(corner);
-		centerSlot.markStructureTiles();
-		structures.add(centerSlot);
-	}
-	
-	public void drawStartingPositions() {
-		String blueprintString = "00000.01110.01110.01110.01110";
-		StructureSlot startingSlot = new StructureSlot(this, blueprintString, -random.nextInt(2));
-		StructureSlot mirrorSlot = startingSlot.getMirrorSlot();
-		
-		startingSlot.markStructureTiles();
-		mirrorSlot.markStructureTiles();
-		startingSlot.drawStructureTiles();
-		mirrorSlot.drawStructureTiles();
-		structures.add(startingSlot);
-		structures.add(mirrorSlot);
-	}
-	
-	public void drawCenter() {
-		centerSlot.drawStructureTiles();
 	}
 }

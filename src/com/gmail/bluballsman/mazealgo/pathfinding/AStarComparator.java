@@ -33,7 +33,7 @@ public class AStarComparator implements Comparator<Point> {
 			return -1;
 		}
 		else {
-			return toStartP1 < toStartP2 ? 1 : -1;
+			return toStartP1 > toStartP2 ? 1 : -1;
 		}		
 	}
 

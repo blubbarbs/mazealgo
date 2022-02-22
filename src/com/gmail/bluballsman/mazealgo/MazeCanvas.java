@@ -11,6 +11,7 @@ import java.util.Collection;
 import com.gmail.bluballsman.mazealgo.maze.Maze;
 import com.gmail.bluballsman.mazealgo.maze.SymmetricMaze;
 import com.gmail.bluballsman.mazealgo.maze.Tile;
+import com.gmail.bluballsman.mazealgo.structure.Structure;
 
 public class MazeCanvas extends Canvas {
 	private static final long serialVersionUID = 1L;
@@ -32,11 +33,28 @@ public class MazeCanvas extends Canvas {
 	public void paint(Graphics g) {
 		long millis = System.currentTimeMillis();
 		maze = new SymmetricMaze(mazeWidth, mazeHeight);
+		Structure testStructure = new Structure("00000.01110.01110.01110.00000");
+		Structure testStructure2 = new Structure("000.010.010");
+		maze.placeStructure(testStructure);
+		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);
+		maze.placeStructure(testStructure2);		
 		maze.fillMaze();
-		maze.knockDownWalls(8);
-		Collection<Point> path = maze.findPath(new Point(1, 1), new Point(1, 5));
-
-		System.out.println("Path: " + path.toString());
+		//maze.knockDownWalls(45);
+		Collection<Point> path = maze.findPath(new Point(1, 1), maze.getCenterPoint());
+		
+		if(path != null) {
+			System.out.println("Path: " + path.toString());
+		}
+		else {
+			System.out.println("No Path");
+		}
+		
 		System.out.println("Time: " + (System.currentTimeMillis() - millis));
 
 		for(int y = 0; y < maze.getHeight(); y++) {
@@ -44,10 +62,25 @@ public class MazeCanvas extends Canvas {
 				int paintX = tileSize * x;
 				int paintY = tileSize * y;
 				Tile t = maze.getTile(x, y);
-				Color color = t.isGround() ? new Color(255, 255, 255) : new Color(0, 0, 0);
-				if(t.isStructure()) {
-					//color = t.isGround() ? new Color(220, 223, 230) : new Color(105, 107, 112);
+				boolean isGuaranteedWall = x % 2 == 0 && y % 2 == 0;
+				boolean isGuaranteedGround = x % 2 == 1 && y % 2 == 1;
+				Color color = null;
+				
+				if(!t.isGround()) {
+					if(isGuaranteedWall) {
+						color = new Color(50, 50, 50);
+					}
+					else if(isGuaranteedGround) {
+						color = new Color(210, 210, 210);
+					}
+					else {
+						color = new Color(127, 127, 127);
+					}
 				}
+				else {
+					color = new Color(255, 255, 255);
+				}
+				
 				
 				g.setColor(color);
 				g.fillRect(paintX, paintY, tileSize, tileSize);
