@@ -185,50 +185,31 @@ public class Maze {
 		return true;
 	}
 	
-	public ArrayList<StructureEntry> findMatches(Structure s) {
-		ArrayList<StructureEntry> matches = new ArrayList<StructureEntry>();
+	public ArrayList<StructureSlot> findValidStructureSlots(Structure s) {
+		ArrayList<StructureSlot> matches = new ArrayList<StructureSlot>();
 		
-		for(int y = 0; y <= height - s.height; y+=2) {
-			for(int x = 0; x <= width - s.width; x+=2) {
-				Point p = new Point(x, y);
-				
-				if(canPlaceStructure(p, s)) {
-					matches.add(new StructureEntry(p, s));
+		for(int rotations = 0; rotations < 4; rotations++) {
+			for(int y = 0; y <= height - s.height; y+=2) {
+				for(int x = 0; x <= width - s.width; x+=2) {
+					Point p = new Point(x, y);
+					
+					if(canPlaceStructure(p, s)) {
+						matches.add(new StructureSlot(p, s));
+					}
 				}
-			}
+			}			
+		
+			s = s.rotate(1);
 		}
 		
 		return matches;
 	}
 	
-	
-	public void placeStructure(Structure s) {
-		ArrayList<StructureEntry> entries = new ArrayList<StructureEntry>();
-		Structure current = s.clone();
-		
-		// Finding all the different slots where the structure fits per rotation
-		for(int rotations = 0; rotations < 4; rotations++) {
-			entries.addAll(findMatches(current));
-			
-			current = current.rotate(1);
-		}
-		
-		if(entries.isEmpty()) {
-			return;
-		}
-				
-		
-		// Selecting random entry out of all the entries
-		int randomIndex = random.nextInt(entries.size());
-		StructureEntry randomEntry = entries.get(randomIndex);
-		Structure selectedStructure = randomEntry.structure;
-		Point selectedPoint = randomEntry.point;
-		
-		// Actually placing the structure. a "0" = wall, "1" = ground, "?" = random 
-		for(int y = 0; y < selectedStructure.height; y++) {
-			for(int x = 0; x < selectedStructure.width; x++) {
-				Point rel = new Point(selectedPoint.x + x, selectedPoint.y + y);
-				char symbol = selectedStructure.blueprint[x][y];
+	public void placeStructure(Point p, Structure s) {
+		for(int y = 0; y < s.height; y++) {
+			for(int x = 0; x < s.width; x++) {
+				Point rel = new Point(p.x + x, p.y + y);
+				char symbol = s.blueprint[x][y];
 				
 				switch(symbol) {
 				case '0':
@@ -248,6 +229,21 @@ public class Maze {
 				}
 			}
 		}
+	}
+	
+	public void placeStructure(Structure s) {
+		ArrayList<StructureSlot> slots = findValidStructureSlots(s);
+		
+		if(slots.isEmpty()) {
+			return;
+		}
+		
+		int randomIndex = random.nextInt(slots.size());
+		StructureSlot randomEntry = slots.get(randomIndex);
+		Structure selectedStructure = randomEntry.structure;
+		Point selectedPoint = randomEntry.point;
+		
+		placeStructure(selectedPoint, selectedStructure);
 	}
 		
 	public void setGround(int x, int y, boolean isGround) {
@@ -330,9 +326,9 @@ public class Maze {
 		}
 	}
 	
-	public ArrayList<Point> knockDownWalls(int cutoffLength) {
+	
+	public ArrayList<Point> getDeletableWalls() {
 		ArrayList<Point> deletableWalls = new ArrayList<Point>();
-		ArrayList<Point> deletedWalls = new ArrayList<Point>();
 		
 		for(int y = 1; y < height - 1; y++) {
 			for(int x = 1 + (y % 2); x < width - 1; x+=2) {
@@ -340,8 +336,15 @@ public class Maze {
 					deletableWalls.add(new Point(x, y));
 				}
 			}
-		}
-
+		}		
+		
+		return deletableWalls;
+	}
+	
+	public ArrayList<Point> knockDownWalls(int cutoffLength) {
+		ArrayList<Point> deletableWalls = getDeletableWalls();
+		ArrayList<Point> deletedWalls = new ArrayList<Point>();
+		
 		Collections.shuffle(deletableWalls);
 		
 		for(Point wall : deletableWalls) {
@@ -350,6 +353,7 @@ public class Maze {
 			
 			if (shortestPath.size() >= cutoffLength) {
 				setGround(wall, true);
+				deletedWalls.add(wall);
 			}
 		}
 		

@@ -6,8 +6,8 @@ import javax.swing.JFrame;
 
 public class Main {
 	static final int tileSize = 15;
-	static final int width = 51;
-	static final int height = 51;
+	static final int width = 73;
+	static final int height = 73;
 	
 	public static void main(String[] args) {
 		JFrame frame = new JFrame("Maze");
@@ -19,6 +19,4 @@ public class Main {
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 	}
-	
-	
 }

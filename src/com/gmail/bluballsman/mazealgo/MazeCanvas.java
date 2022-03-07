@@ -6,7 +6,6 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Collection;
 
 import com.gmail.bluballsman.mazealgo.maze.Maze;
 import com.gmail.bluballsman.mazealgo.maze.SymmetricMaze;
@@ -37,6 +36,10 @@ public class MazeCanvas extends Canvas {
 		g.fillRect(paintX, paintY, tileSize, tileSize);		
 	}
 	
+	public void paintTile(Graphics g, Point p, Color color) {
+		paintTile(g, p.x, p.y, color);
+	}
+	
 	public void paintGridLayer(Graphics g) {
 		for(int y = 0; y < maze.getHeight(); y++) {
 			for(int x = 0; x < maze.getWidth(); x++) {		
@@ -59,10 +62,45 @@ public class MazeCanvas extends Canvas {
 	@Override
 	public void paint(Graphics g) {
 		long millis = System.currentTimeMillis();
-		maze = new Maze(mazeWidth, mazeHeight);
+		maze = new SymmetricMaze(mazeWidth, mazeHeight);
+		String centerBlueprint = """
+				XXXXXXXXXXXXXXXXX
+				XXXXXXXXXXXXXXXXX
+				XX1111111111111XX
+				XX1111111111111XX
+				XX1111111111111XX
+				XX1111111111111XX
+				XX1111111111111XX
+				XX1111111111111XX
+				XX1111111111111XX
+				XX1111111111111XX				
+				XX1111111111111XX				
+				XXXXXXXXXXXXXXXXX								
+				XXXXXXXXXXXXXXXXX
+				""";
+
+		centerBlueprint = """
+				1111111111111
+				1111111111111
+				1111111111111
+				1111111111111
+				1111111111111
+				1111111111111
+				1111111111111
+				1111111111111			
+				1111111111111				
+				""";		
+		
+		Structure center = new Structure(centerBlueprint);
 		Structure room = new Structure("01000.01110.01110.01110.00010");
 		Structure deadEnd = new Structure("000.010.010");
 		Structure hall = new Structure("000.011.010.010.010.010.010.010.010");
+		
+		Point centerPoint = maze.getCenterPoint();
+		Point centerStrucCorner = new Point((centerPoint.x  - center.getCenter().x), (centerPoint.y - center.getCenter().y));
+		
+		maze.placeStructure(centerStrucCorner, center);
+		
 		for(int i = 0; i < 3; i++) {
 			maze.placeStructure(room);
 		}		
@@ -74,7 +112,7 @@ public class MazeCanvas extends Canvas {
 		}
 		
 		maze.fillMaze(new Point(1, 1));
-		maze.knockDownWalls(45);
+		//maze.knockDownWalls(45);
 		
 		System.out.println("Time: " + (System.currentTimeMillis() - millis));
 
@@ -85,7 +123,7 @@ public class MazeCanvas extends Canvas {
 				
 				if(t.isStructure()) {
 					color = t.isGround() ? new Color(255, 255, 255) : new Color(255, 0, 0);
-					color = t.isGround() ? new Color(255, 255, 255) : new Color(0, 0, 0);
+					//color = t.isGround() ? new Color(255, 255, 255) : new Color(0, 0, 0);
 				}
 				else {
 					color = t.isGround() ? new Color(255, 255, 255) : new Color(0, 0, 0);
@@ -95,6 +133,7 @@ public class MazeCanvas extends Canvas {
 			}
 		}
 		
+		paintTile(g, maze.getCenterPoint(), new Color(255, 0, 255));
 		paintGridLayer(g);
 	}
 	

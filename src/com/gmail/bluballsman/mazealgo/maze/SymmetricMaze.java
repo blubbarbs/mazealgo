@@ -2,7 +2,7 @@ package com.gmail.bluballsman.mazealgo.maze;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Stack;
 
 public class SymmetricMaze extends Maze {
@@ -14,6 +14,29 @@ public class SymmetricMaze extends Maze {
 	public SymmetricMaze(int width, int height, long randomSeed) {
 		super(width, height, randomSeed);
 	}
+	
+	@Override
+	public ArrayList<Point> getDeletableWalls() {
+		Point center = getCenterPoint();
+		ArrayList<Point> deletableWalls = new ArrayList<Point>();
+		
+		for(int y = 1; y < center.y; y++) {
+			for(int x = 1 + (y % 2); x < width - 1; x+=2) {
+				if(!isGround(x, y) && !isStructure(x, y)) {
+					deletableWalls.add(new Point(x, y));
+				}
+			}
+		}		
+		
+		for(int x = 1 + (center.y % 2); x < center.x; x+=2) {
+			if(!isGround(x, center.y) && !isStructure(x, center.y)) {
+				deletableWalls.add(new Point(x, center.y));
+			}
+		}
+		
+		return deletableWalls;
+	}
+	
 	
 	@Override
 	public void setGround(int x, int y, boolean isGround) {
@@ -29,45 +52,42 @@ public class SymmetricMaze extends Maze {
 		super.setStructureFlag(mirror.x, mirror.y, structureFlag);
 	}
 	
-	// Identical to normal maze generation except that because of the symmetry, the two symmetrical paths
-	// must be forcibly reunited. The first time they meet, the path between them will open.
 	@Override
 	public void fillMaze(Point start) {
-		HashSet<Point> allVisitedPoints = new HashSet<Point>();
-		Stack<Point> path = new Stack<Point>();
-		boolean hasConnected = false;
+		super.fillMaze(start);
 		
-		path.push(start);
-		allVisitedPoints.add(start);
-		setGround(start, true);
+		if(findPath(new Point(1, 1), getMirrorPoint(1, 1)) == null) {
+			connectSymmetricalHalves();
+		}
 		
-		while(!path.isEmpty()) {
-			Point currentPoint = path.peek();
-			ArrayList<Point> availablePoints = getSurroundingPoints(currentPoint, 2, point -> !isGround(point));
+	}
+	
+	public void connectSymmetricalHalves() {
+		Point center = getCenterPoint();
+		boolean isGuaranteedWall = center.x % 2 == 0 && center.y % 2 == 0;
+		boolean isGroundOrWall = center.x % 2 != center.y % 2;
+		
+		System.out.println("Center: " + center.toString());
+		
+		if(isGuaranteedWall) {
+			ArrayList<Point> deletableWalls = getDeletableWalls();
 			
-			if(!availablePoints.isEmpty()) {
-				int chosenIndex = random.nextInt(availablePoints.size());
-				Point chosenPoint = availablePoints.get(chosenIndex);
+			Collections.shuffle(deletableWalls);
+			
+			for(Point wall : deletableWalls) {
+				ArrayList<Point> neighbors = getSurroundingPoints(wall, (p) -> isGround(p));
+				Stack<Point> shortestPath = findPath(neighbors.get(0), neighbors.get(1));
 				
-				forEach(chosenPoint, currentPoint, point -> setGround(point, true));
-				path.push(chosenPoint);
-				allVisitedPoints.add(chosenPoint);
-			}
-			else {
-				currentPoint = path.pop();
-			}
-		
-			if(!hasConnected) {
-				ArrayList<Point> intersectingPoints = getSurroundingPoints(currentPoint, 2, point -> isGround(point) && !allVisitedPoints.contains(point));
-				
-				if(!intersectingPoints.isEmpty()) {
-					Point deletedPoint = intersectingPoints.get(0);
-					
-					forEach(currentPoint, deletedPoint, point -> setGround(point, true));
-					hasConnected = true;
+				if(shortestPath == null) {
+					setGround(wall, true);
+					System.out.println("Deleted " + wall.toString());
+					return;
 				}
 			}
 		}
+		else if(isGroundOrWall) {
+			setGround(center, true);
+		}	
 	}
 	
 }

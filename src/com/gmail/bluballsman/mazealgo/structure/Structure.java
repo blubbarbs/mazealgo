@@ -1,5 +1,6 @@
 package com.gmail.bluballsman.mazealgo.structure;
 
+import java.awt.Point;
 import java.util.Random;
 
 public class Structure {
@@ -8,7 +9,7 @@ public class Structure {
 	public final char[][] blueprint;
 	
 	public Structure(String strucString, Random r) {
-		String[] lines = strucString.split("[.]");
+		String[] lines = strucString.split("[.]|\n");
 		
 		width = lines[0].length();
 		height = lines.length;
@@ -27,7 +28,7 @@ public class Structure {
 			}
 		}
 	}
-	
+		
 	public Structure(String strucString) {
 		this(strucString, new Random());
 	}
@@ -37,6 +38,10 @@ public class Structure {
 		width =  blueprint.length;
 		height = blueprint[0].length;
 	}
+	
+	public Point getCenter() {
+		return new Point((width - 1) / 2, (height - 1) / 2);
+	}	
 	
 	public Structure rotate(int rotations) {
 		char[][] newBlueprint;
