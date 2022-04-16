@@ -326,7 +326,6 @@ public class Maze {
 		}
 	}
 	
-	
 	public ArrayList<Point> getDeletableWalls() {
 		ArrayList<Point> deletableWalls = new ArrayList<Point>();
 		

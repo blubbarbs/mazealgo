@@ -1,0 +1,2 @@
+- Do the center (possibly the "corners" idea) correctly
+- Placing structures - possibly implement the minecraft method of having discrete blocks that structures can spawn in to limit how many are very close together
