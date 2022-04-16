@@ -15,11 +15,11 @@ public class Structure {
 		height = lines.length;
 		blueprint = new char[width][height];
 		
-		for(int y = 0; y < height; y++) {
-			for(int x = 0; x < width; x++) {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
 				char c = lines[y].charAt(x);
 				
-				if(c != '?') {
+				if (c != '?') {
 					blueprint[x][y] = c;
 				}
 				else {
@@ -47,12 +47,12 @@ public class Structure {
 		char[][] newBlueprint;
 		rotations = rotations < 0 ? 4 + (rotations % 4) : rotations % 4; 
 		
-		switch(rotations) {
+		switch (rotations) {
 		case 1:
 			newBlueprint = new char[height][width];
 			
-			for(int y = 0; y < height; y++) {
-				for(int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
 					newBlueprint[y][x] = blueprint[x][height - y - 1];
 				}
 			}
@@ -61,8 +61,8 @@ public class Structure {
 		case 2:
 			newBlueprint = new char[width][height];
 			
-			for(int y = 0; y < height; y++) {
-				for(int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
 					newBlueprint[x][y] = blueprint[width - x - 1][height - y - 1];
 				}
 			}
@@ -71,8 +71,8 @@ public class Structure {
 		case 3:
 			newBlueprint = new char[height][width];
 			
-			for(int y = 0; y < height; y++) {
-				for(int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
 					newBlueprint[y][x] = blueprint[width - x - 1][y];
 				}
 			}
@@ -81,8 +81,8 @@ public class Structure {
 		default:
 			newBlueprint = new char[width][height];
 			
-			for(int y = 0; y < height; y++) {
-				for(int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
 					newBlueprint[x][y] = blueprint[x][y];
 				}
 			}
@@ -102,8 +102,8 @@ public class Structure {
 	@Override
 	public String toString() {
 		String s = "";
-		for(int y = 0; y < height; y++) {
-			for(int x = 0; x < width; x++) {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
 				 s += blueprint[x][y];
 			}
 			

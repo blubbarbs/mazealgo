@@ -25,8 +25,8 @@ public class Maze {
 	   this.height = height;
 		tiles = new Tile[width][height];
 		
-		for(int y = 0; y < height; y++) {
-			for(int x = 0; x < width; x++) {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
 				tiles[x][y] = new Tile();
 			}
 		}
@@ -142,19 +142,19 @@ public class Maze {
 		Point south = new Point(p.x, p.y - offset);
 		Point west = new Point(p.x - offset, p.y);	
 		
-		if(isValidPoint(north) && predicate.test(north)) {
+		if (isValidPoint(north) && predicate.test(north)) {
 			points.add(north);
 		}
 		
-		if(isValidPoint(east) && predicate.test(east)) {
+		if (isValidPoint(east) && predicate.test(east)) {
 			points.add(east);
 		}
 
-		if(isValidPoint(south) && predicate.test(south)) {
+		if (isValidPoint(south) && predicate.test(south)) {
 			points.add(south);
 		}
 
-		if(isValidPoint(west) && predicate.test(west)) {
+		if (isValidPoint(west) && predicate.test(west)) {
 			points.add(west);
 		}
 
@@ -170,13 +170,13 @@ public class Maze {
 	}
 	
 	public boolean canPlaceStructure(Point p, Structure s) {
-		for(int y = 0; y < s.height; y++) {
-			for(int x = 0; x < s.width; x++) {
+		for (int y = 0; y < s.height; y++) {
+			for (int x = 0; x < s.width; x++) {
 				Point rel = new Point(p.x + x, p.y + y);
 				char symbol = s.blueprint[x][y];
 				boolean overwrites = (symbol == '1' && !isGround(rel)) || (symbol == '0' && isGround(rel));				
 				
-				if(isStructure(rel) || (isEdge(rel) && overwrites)) {
+				if (isStructure(rel) || (isEdge(rel) && overwrites)) {
 					return false;
 				}
 			}
@@ -188,12 +188,12 @@ public class Maze {
 	public ArrayList<StructureSlot> findValidStructureSlots(Structure s) {
 		ArrayList<StructureSlot> matches = new ArrayList<StructureSlot>();
 		
-		for(int rotations = 0; rotations < 4; rotations++) {
-			for(int y = 0; y <= height - s.height; y+=2) {
-				for(int x = 0; x <= width - s.width; x+=2) {
+		for (int rotations = 0; rotations < 4; rotations++) {
+			for (int y = 0; y <= height - s.height; y+=2) {
+				for (int x = 0; x <= width - s.width; x+=2) {
 					Point p = new Point(x, y);
 					
-					if(canPlaceStructure(p, s)) {
+					if (canPlaceStructure(p, s)) {
 						matches.add(new StructureSlot(p, s));
 					}
 				}
@@ -206,8 +206,8 @@ public class Maze {
 	}
 	
 	public void placeStructure(Point p, Structure s) {
-		for(int y = 0; y < s.height; y++) {
-			for(int x = 0; x < s.width; x++) {
+		for (int y = 0; y < s.height; y++) {
+			for (int x = 0; x < s.width; x++) {
 				Point rel = new Point(p.x + x, p.y + y);
 				char symbol = s.blueprint[x][y];
 				
@@ -234,7 +234,7 @@ public class Maze {
 	public void placeStructure(Structure s) {
 		ArrayList<StructureSlot> slots = findValidStructureSlots(s);
 		
-		if(slots.isEmpty()) {
+		if (slots.isEmpty()) {
 			return;
 		}
 		
@@ -272,7 +272,7 @@ public class Maze {
 			Point currentPoint = path.peek();
 			ArrayList<Point> availablePoints = getSurroundingPoints(currentPoint, 2, point -> !isGround(point));
 			
-			if(!availablePoints.isEmpty()) {
+			if (!availablePoints.isEmpty()) {
 				int chosenIndex = random.nextInt(availablePoints.size());
 				Point chosenPoint = availablePoints.get(chosenIndex);
 				
@@ -296,7 +296,7 @@ public class Maze {
 		while (!openNodes.isEmpty()) {
 			Point current = openNodes.poll();
 			
-			if(current.equals(finish)) {
+			if (current.equals(finish)) {
 				break;
 			}
 
@@ -309,7 +309,7 @@ public class Maze {
 		}
 		
 		// Reconstructing path after A* search is done
-		if(nodeParents.containsKey(finish)) {
+		if (nodeParents.containsKey(finish)) {
 			Stack<Point> path = new Stack<Point>();
 			
 			Point current = finish;
@@ -330,9 +330,9 @@ public class Maze {
 	public ArrayList<Point> getDeletableWalls() {
 		ArrayList<Point> deletableWalls = new ArrayList<Point>();
 		
-		for(int y = 1; y < height - 1; y++) {
-			for(int x = 1 + (y % 2); x < width - 1; x+=2) {
-				if(!isGround(x, y) && !isStructure(x, y)) {
+		for (int y = 1; y < height - 1; y++) {
+			for (int x = 1 + (y % 2); x < width - 1; x+=2) {
+				if (!isGround(x, y) && !isStructure(x, y)) {
 					deletableWalls.add(new Point(x, y));
 				}
 			}
@@ -347,7 +347,7 @@ public class Maze {
 		
 		Collections.shuffle(deletableWalls);
 		
-		for(Point wall : deletableWalls) {
+		for (Point wall : deletableWalls) {
 			ArrayList<Point> neighbors = getSurroundingPoints(wall, (p) -> isGround(p));
 			Stack<Point> shortestPath = findPath(neighbors.get(0), neighbors.get(1));
 			
@@ -367,8 +367,8 @@ public class Maze {
 		int maxX = Math.max(start.x, end.x);
 		int maxY = Math.max(start.y, end.y);
 		
-		for(int x = minX; x <= maxX; x++) {
-			for(int y = minY; y <= maxY; y++) {
+		for (int x = minX; x <= maxX; x++) {
+			for (int y = minY; y <= maxY; y++) {
 				Point p = new Point(x, y);
 				
 				action.accept(p);

@@ -41,15 +41,15 @@ public class MazeCanvas extends Canvas {
 	}
 	
 	public void paintGridLayer(Graphics g) {
-		for(int y = 0; y < maze.getHeight(); y++) {
-			for(int x = 0; x < maze.getWidth(); x++) {		
+		for (int y = 0; y < maze.getHeight(); y++) {
+			for (int x = 0; x < maze.getWidth(); x++) {		
 				boolean isGuaranteedWall = x % 2 == 0 && y % 2 == 0;
 				boolean isGuaranteedGround = x % 2 == 1 && y % 2 == 1;
 			
-				if(isGuaranteedWall) {
+				if (isGuaranteedWall) {
 					paintTile(g, x, y, new Color(255, 255, 255, 50));
 				}				
-				else if(isGuaranteedGround) {
+				else if (isGuaranteedGround) {
 					paintTile(g, x, y, new Color(255, 255, 255, 210));					
 				}
 				else {
@@ -101,13 +101,13 @@ public class MazeCanvas extends Canvas {
 		
 		maze.placeStructure(centerStrucCorner, center);
 		
-		for(int i = 0; i < 3; i++) {
+		for (int i = 0; i < 3; i++) {
 			maze.placeStructure(room);
 		}		
-		for(int i = 0; i < 16; i++) {
+		for (int i = 0; i < 16; i++) {
 			maze.placeStructure(deadEnd);
 		}
-		for(int i = 0; i < 3; i++) {
+		for (int i = 0; i < 3; i++) {
 			maze.placeStructure(hall);
 		}
 		
@@ -116,12 +116,12 @@ public class MazeCanvas extends Canvas {
 		
 		System.out.println("Time: " + (System.currentTimeMillis() - millis));
 
-		for(int y = 0; y < maze.getHeight(); y++) {
-			for(int x = 0; x < maze.getWidth(); x++) {
+		for (int y = 0; y < maze.getHeight(); y++) {
+			for (int x = 0; x < maze.getWidth(); x++) {
 				Tile t = maze.getTile(x, y);
 				Color color = null;
 				
-				if(t.isStructure()) {
+				if (t.isStructure()) {
 					color = t.isGround() ? new Color(255, 255, 255) : new Color(255, 0, 0);
 					//color = t.isGround() ? new Color(255, 255, 255) : new Color(0, 0, 0);
 				}

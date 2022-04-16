@@ -29,7 +29,7 @@ public class AStarComparator implements Comparator<Point> {
 		if (combinedP1 > combinedP2) {
 			return 1;
 		} 
-		else if(combinedP1 < combinedP2) {
+		else if (combinedP1 < combinedP2) {
 			return -1;
 		}
 		else {

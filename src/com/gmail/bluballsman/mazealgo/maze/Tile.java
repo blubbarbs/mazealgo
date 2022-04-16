@@ -28,9 +28,9 @@ public class Tile {
 		// Setting up the default type codes for each of the tile types. All rotations from this type code
 		// are stored in a separate map for easy access. 
 		static {
-			for(Type type: values()) {
+			for (Type type: values()) {
 				int dummyCode = type.typeCode + (type.typeCode << 4);
-				for(int rotations = 0; rotations < 4; rotations++) {
+				for (int rotations = 0; rotations < 4; rotations++) {
 					int rotatedTypeCode = (dummyCode >> rotations) & 0b00001111;
 					codeMap.putIfAbsent(rotatedTypeCode, type);
 					rotationMap.putIfAbsent(rotatedTypeCode, rotations);
