@@ -6,6 +6,9 @@ import java.util.Random;
 public class Structure {
 	public final int width;
 	public final int height;
+	public final Point center;
+	public final int radiusX;
+	public final int radiusY;
 	public final char[][] blueprint;
 	
 	public Structure(String strucString, Random r) {
@@ -13,6 +16,15 @@ public class Structure {
 		
 		width = lines[0].length();
 		height = lines.length;
+		radiusX = width / 2;
+		radiusY = height / 2;
+		
+		assert width % 2 == 1;
+		assert height % 2 == 1;
+		assert radiusX % 2 == 1;
+		assert radiusY % 2 == 1;
+		
+		center = new Point((width - 1) / 2, (height - 1) / 2); 		
 		blueprint = new char[width][height];
 		
 		for (int y = 0; y < height; y++) {
@@ -37,12 +49,17 @@ public class Structure {
 		this.blueprint = blueprint;
 		width =  blueprint.length;
 		height = blueprint[0].length;
+		radiusX = width / 2;
+		radiusY = height / 2;
+
+		assert width % 2 == 1;
+		assert height % 2 == 1;
+		assert radiusX % 2 == 1;
+		assert radiusY % 2 == 1;
+
+		center = new Point((width - 1) / 2, (height - 1) / 2);
 	}
-	
-	public Point getCenter() {
-		return new Point((width - 1) / 2, (height - 1) / 2);
-	}	
-	
+		
 	public Structure rotate(int rotations) {
 		char[][] newBlueprint;
 		rotations = rotations < 0 ? 4 + (rotations % 4) : rotations % 4; 

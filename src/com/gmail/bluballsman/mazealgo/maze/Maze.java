@@ -89,6 +89,16 @@ public class Maze {
 		return t != null && t.isStructure();
 	}
 	
+	public boolean isLocked(int x, int y) {
+		Tile t = getTile(x, y);
+		
+		return t == null || t.isLocked();
+	}
+	
+	public boolean isLocked(Point p) {
+		return isLocked(p.x, p.y);
+	}
+	
 	// Returns the "type code" for this point. The type code is a representation of the surrounding tiles on the north, east, south, and west sides
 	// of this tile. If a surrounding tile match this tile's ground flag, it is represented as a "1", otherwise as "0". 
 	// These bits are represented in the type code from left to right as north, east, south, west. So a type code of 1010 means that the ground flag
@@ -169,16 +179,23 @@ public class Maze {
 		return getSurroundingPoints(p, 1, null);
 	}
 	
-	public boolean canPlaceStructure(Point p, Structure s) {
-		for (int y = 0; y < s.height; y++) {
-			for (int x = 0; x < s.width; x++) {
-				Point rel = new Point(p.x + x, p.y + y);
-				char symbol = s.blueprint[x][y];
+	
+	public boolean doesStructureFit(Point topLeft, Structure s) {
+		if (topLeft.x < 0 || topLeft.y < 0)
+			return false;
+		
+		if (topLeft.x + s.width >= width || topLeft.y + s.height >= height)
+			return false;
+		
+		for (int sy = 0; sy < s.height; sy+=2) {
+			for (int sx = 0; sx < s.width; sx+=2) {
+				Point rel = new Point(topLeft.x + sx, topLeft.y + sy);
+											
+				char symbol = s.blueprint[sx][sy];
 				boolean overwrites = (symbol == '1' && !isGround(rel)) || (symbol == '0' && isGround(rel));				
 				
-				if (isStructure(rel) || (isEdge(rel) && overwrites)) {
+				if (isStructure(rel) || (isEdge(rel) && overwrites))
 					return false;
-				}
 			}
 		}
 		
@@ -187,15 +204,14 @@ public class Maze {
 	
 	public ArrayList<StructureSlot> findValidStructureSlots(Structure s) {
 		ArrayList<StructureSlot> matches = new ArrayList<StructureSlot>();
-		
+				
 		for (int rotations = 0; rotations < 4; rotations++) {
-			for (int y = 0; y <= height - s.height; y+=2) {
-				for (int x = 0; x <= width - s.width; x+=2) {
-					Point p = new Point(x, y);
+			for (int y = 1; y < height; y+=2) {				
+				for (int x = 1; x < width; x+=2) {					
+					Point topLeft = new Point(x - (s.width / 2), y - (s.height / 2));
 					
-					if (canPlaceStructure(p, s)) {
-						matches.add(new StructureSlot(p, s));
-					}
+					if (doesStructureFit(topLeft, s))
+						matches.add(new StructureSlot(new Point(x, y), s));					
 				}
 			}			
 		
@@ -205,24 +221,35 @@ public class Maze {
 		return matches;
 	}
 	
-	public void placeStructure(Point p, Structure s) {
+	public void placeStructure(Point p, Structure s) {		
+		assert p.x % 2 != 0;
+		assert p.y % 2 != 0;
+		
+		int rX = s.width / 2;
+		int rY = s.height / 2;
+
+		System.out.println("Placing structure at " + p.toString() + s.width + " " + s.height + " " + rX + " " + rY);
+		
 		for (int y = 0; y < s.height; y++) {
 			for (int x = 0; x < s.width; x++) {
-				Point rel = new Point(p.x + x, p.y + y);
+				Point rel = new Point(p.x - rX + x, p.y - rY + y);
 				char symbol = s.blueprint[x][y];
 				
 				switch(symbol) {
 				case '0':
 					setGround(rel, false);
 					setStructureFlag(rel, true);
+					setLockedFlag(rel, true);
 					break;
 				case '1':
 					setGround(rel, true);
 					setStructureFlag(rel, true);
+					setLockedFlag(rel, true);
 					break;
 				case '?':
 					setGround(rel, random.nextBoolean());
 					setStructureFlag(rel, true);
+					setLockedFlag(rel, true);
 					break;
 				default:
 					break;
@@ -231,7 +258,7 @@ public class Maze {
 		}
 	}
 	
-	public void placeStructure(Structure s) {
+	public void generateStructure(Structure s) {
 		ArrayList<StructureSlot> slots = findValidStructureSlots(s);
 		
 		if (slots.isEmpty()) {
@@ -245,7 +272,11 @@ public class Maze {
 		
 		placeStructure(selectedPoint, selectedStructure);
 	}
-		
+
+	public void generateStructure(Point p, Structure s) {		
+		placeStructure(p, s);
+	}
+	
 	public void setGround(int x, int y, boolean isGround) {
 		tiles[x][y].isGround = isGround;
 	}
@@ -255,11 +286,19 @@ public class Maze {
 	}
 	
 	public void setStructureFlag(int x, int y, boolean isStructure) {
-		tiles[x][y].structureFlag = isStructure;
+		tiles[x][y].isStructure = isStructure;
 	}
 	
 	public void setStructureFlag(Point p, boolean isStructure) {
 		setStructureFlag(p.x, p.y, isStructure);
+	}
+	
+	public void setLockedFlag(int x, int y, boolean isLocked) {
+		tiles[x][y].locked = isLocked;
+	}
+	
+	public void setLockedFlag(Point p, boolean isLocked) {
+		setLockedFlag(p.x, p.y, isLocked);
 	}
 	
 	public void fillMaze(Point start) {
@@ -347,7 +386,7 @@ public class Maze {
 		Collections.shuffle(deletableWalls);
 		
 		for (Point wall : deletableWalls) {
-			ArrayList<Point> neighbors = getSurroundingPoints(wall, (p) -> isGround(p));
+			ArrayList<Point> neighbors = getSurroundingPoints(wall, (p) -> isGround(p) && !isLocked(p));
 			Stack<Point> shortestPath = findPath(neighbors.get(0), neighbors.get(1));
 			
 			if (shortestPath.size() >= cutoffLength) {

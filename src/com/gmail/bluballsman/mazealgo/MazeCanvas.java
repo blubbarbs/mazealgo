@@ -62,53 +62,60 @@ public class MazeCanvas extends Canvas {
 	@Override
 	public void paint(Graphics g) {
 		long millis = System.currentTimeMillis();
-		maze = new SymmetricMaze(mazeWidth, mazeHeight);
-		String centerBlueprint = """
-				XXXXXXXXXXXXXXXXX
-				XXXXXXXXXXXXXXXXX
-				XX1111111111111XX
-				XX1111111111111XX
-				XX1111111111111XX
-				XX1111111111111XX
-				XX1111111111111XX
-				XX1111111111111XX
-				XX1111111111111XX
-				XX1111111111111XX				
-				XX1111111111111XX				
-				XXXXXXXXXXXXXXXXX								
-				XXXXXXXXXXXXXXXXX
-				""";
-
-		centerBlueprint = """
-				1111111111111
-				1111111111111
-				1111111111111
-				1111111111111
-				1111111111111
-				1111111111111
-				1111111111111
-				1111111111111			
-				1111111111111				
-				""";		
+		maze = new Maze(mazeWidth, mazeHeight);
 		
-		Structure center = new Structure(centerBlueprint);
-		Structure room = new Structure("01000.01110.01110.01110.00010");
-		Structure deadEnd = new Structure("000.010.010");
-		Structure hall = new Structure("000.011.010.010.010.010.010.010.010");
+		Structure center = new Structure(
+				"""
+				111111111111111
+				111111111111111
+				111111111111111
+				111111111111111
+				111111111111111
+				111111111111111
+				111111111111111
+				111111111111111			
+				111111111111111
+				111111111111111
+				111111111111111				
+				""");
+		Structure room = new Structure(
+				"""
+				0000000
+				0111110
+				0111110
+				0111110
+				0111110
+				0111110
+				0000000
+				""");
+		Structure deadEnd = new Structure(
+				"""
+				000
+				010
+				010
+				""");
+		Structure hall = new Structure(
+				"""
+				000
+				011
+				010
+				010
+				010
+				010
+				010
+				""");
+				
+		maze.generateStructure(maze.getCenterPoint(), center);
 		
-		Point centerPoint = maze.getCenterPoint();
-		Point centerStrucCorner = new Point((centerPoint.x  - center.getCenter().x), (centerPoint.y - center.getCenter().y));
-		
-		maze.placeStructure(centerStrucCorner, center);
 		
 		for (int i = 0; i < 3; i++) {
-			maze.placeStructure(room);
+			maze.generateStructure(room);
 		}		
 		for (int i = 0; i < 16; i++) {
-			maze.placeStructure(deadEnd);
+			maze.generateStructure(deadEnd);
 		}
 		for (int i = 0; i < 3; i++) {
-			maze.placeStructure(hall);
+			maze.generateStructure(hall);
 		}
 		
 		maze.fillMaze(new Point(1, 1));
@@ -122,7 +129,7 @@ public class MazeCanvas extends Canvas {
 				Color color = null;
 				
 				if (t.isStructure()) {
-					color = t.isGround() ? new Color(255, 255, 255) : new Color(255, 0, 0);
+					color = t.isGround() ? new Color(127, 255, 255) : new Color(255, 0, 0);
 					//color = t.isGround() ? new Color(255, 255, 255) : new Color(0, 0, 0);
 				}
 				else {

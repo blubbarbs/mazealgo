@@ -4,14 +4,19 @@ import java.util.HashMap;
 
 public class Tile {
 	protected boolean isGround = false;
-	protected boolean structureFlag = false;
+	protected boolean isStructure = false;
+	protected boolean locked = false;
 	
 	public boolean isGround() {
 		return isGround;
 	}
 	
 	public boolean isStructure() {
-		return structureFlag;
+		return isStructure;
+	}
+	
+	public boolean isLocked() {
+		return locked;
 	}	
 			
 	public static enum Type {
