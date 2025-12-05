@@ -23,7 +23,7 @@ public class AStarComparator implements Comparator<Point> {
 		double combinedP1 = toStartP1 + toFinishP1;
 		
 		double toStartP2 = calculateManhattan(p2, start);
-		double toFinishP2 = calculateManhattan(p2, start);
+		double toFinishP2 = calculateManhattan(p2, finish);
 		double combinedP2 = toStartP1 + toFinishP2;
 
 		if (combinedP1 > combinedP2) {
