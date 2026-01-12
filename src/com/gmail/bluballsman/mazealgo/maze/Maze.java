@@ -216,7 +216,6 @@ public class Maze {
 
         while (!open.isEmpty()) {
             Tile current = open.poll();
-
             ArrayList<Tile> neighbors = getSurroundingTiles(current.x, current.y, 1, t -> t.isGround() && !history.containsKey(t));
 
             for (Tile t : neighbors) {
@@ -228,7 +227,6 @@ public class Maze {
                 break;
         }
 
-        // Reconstructing path after A* search is done
         if (history.containsKey(end)) {
             Stack<Tile> path = new Stack<>();
 
@@ -247,7 +245,7 @@ public class Maze {
         }
     }
 
-    public ArrayList<Tile> knockDownWalls(int cutoffLength) {
+    public ArrayList<Tile> knockDownWalls(int cutoffLength, double percentage) {
         ArrayList<Tile> deletableWalls = new ArrayList<>();
         ArrayList<Tile> deletedWalls = new ArrayList<>();
 
@@ -261,11 +259,23 @@ public class Maze {
         }
 
         Collections.shuffle(deletableWalls);
+        int numToDelete = (int) (deletableWalls.size() * percentage);
 
-        for (Tile wall : deletableWalls) {
-            ArrayList<Tile> neighbors = getSurroundingTiles(wall.x, wall.y, 1, Tile::isGround);
-            Tile start = neighbors.get(0);
-            Tile end = neighbors.get(1);
+        for (int i = 0; i < numToDelete; i++) {
+            Tile wall = deletableWalls.get(i);
+            Tile start, end;
+
+            if (wall.y % 2 == 0) {
+                start = this.getTile(wall.x, wall.y - 1);
+                end = this.getTile(wall.x, wall.y + 1);
+            }
+            else {
+                start = this.getTile(wall.x - 1, wall.y);
+                end = this.getTile(wall.x + 1, wall.y);
+            }
+
+            if (start == null || end == null || !start.isGround() || !end.isGround())
+                continue;
 
             Stack<Tile> shortestPath = findPath(start.x, start.y, end.x, end.y);
 

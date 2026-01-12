@@ -1,6 +1,5 @@
 package com.gmail.bluballsman.mazealgo.maze;
 
-import java.awt.*;
 import java.util.HashMap;
 
 public class Tile {

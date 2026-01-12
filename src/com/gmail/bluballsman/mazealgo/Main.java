@@ -76,7 +76,7 @@ public class Main {
         }
 
         maze.fillMaze(1, 1);
-        maze.knockDownWalls(12);
+        maze.knockDownWalls(12, .5);
 
         return maze;
     }
