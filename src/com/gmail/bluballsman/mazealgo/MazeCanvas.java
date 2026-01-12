@@ -4,166 +4,75 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
 import com.gmail.bluballsman.mazealgo.maze.Maze;
-import com.gmail.bluballsman.mazealgo.maze.SymmetricMaze;
 import com.gmail.bluballsman.mazealgo.maze.Tile;
-import com.gmail.bluballsman.mazealgo.structure.Structure;
 
 public class MazeCanvas extends Canvas {
-	private static final long serialVersionUID = 1L;
-	
-	private int mazeWidth;
-	private int mazeHeight;
-	private int tileSize;
-	private Maze maze;
-	
-	public MazeCanvas(int mazeWidth, int mazeHeight, int tileSize) {
-		this.mazeWidth = mazeWidth;
-		this.mazeHeight = mazeHeight;
-		this.tileSize = tileSize;
-		addMouseListener(new CanvasListener());
-		setSize(mazeWidth * tileSize, mazeHeight * tileSize);
-	}
-	
-	public void paintTile(Graphics g, int x, int y, Color color) {
-		int paintX = tileSize * x;
-		int paintY = tileSize * y;
-		
-		g.setColor(color);
-		g.fillRect(paintX, paintY, tileSize, tileSize);		
-	}
-	
-	public void paintTile(Graphics g, Point p, Color color) {
-		paintTile(g, p.x, p.y, color);
-	}
-	
-	public void paintGridLayer(Graphics g) {
-		for (int y = 0; y < maze.getHeight(); y++) {
-			for (int x = 0; x < maze.getWidth(); x++) {		
-				boolean isGuaranteedWall = x % 2 == 0 && y % 2 == 0;
-				boolean isGuaranteedGround = x % 2 == 1 && y % 2 == 1;
-			
-				if (isGuaranteedWall) {
-					paintTile(g, x, y, new Color(255, 255, 255, 50));
-				}				
-				else if (isGuaranteedGround) {
-					paintTile(g, x, y, new Color(255, 255, 255, 210));					
-				}
-				else {
-					paintTile(g, x, y, new Color(255, 255, 255, 127));					
-				}
-			}
-		}
-	}
-	
-	@Override
-	public void paint(Graphics g) {
-		long millis = System.currentTimeMillis();
-		maze = new Maze(mazeWidth, mazeHeight);
-		
-		Structure center = new Structure(
-				"""
-				111111111111111
-				111111111111111
-				111111111111111
-				111111111111111
-				111111111111111
-				111111111111111
-				111111111111111
-				111111111111111			
-				111111111111111
-				111111111111111
-				111111111111111				
-				""");
-		Structure room = new Structure(
-				"""
-				0000000
-				0111110
-				0111110
-				0111110
-				0111110
-				0111110
-				0000000
-				""");
-		Structure deadEnd = new Structure(
-				"""
-				000
-				010
-				010
-				""");
-		Structure hall = new Structure(
-				"""
-				000
-				011
-				010
-				010
-				010
-				010
-				010
-				""");
-				
-		maze.generateStructure(maze.getCenterPoint(), center);
-		
-		
-		for (int i = 0; i < 3; i++) {
-			maze.generateStructure(room);
-		}		
-		for (int i = 0; i < 16; i++) {
-			maze.generateStructure(deadEnd);
-		}
-		for (int i = 0; i < 3; i++) {
-			maze.generateStructure(hall);
-		}
-		
-		maze.fillMaze(new Point(1, 1));
-		//maze.knockDownWalls(45);
-		
-		System.out.println("Time: " + (System.currentTimeMillis() - millis));
+    private static final long serialVersionUID = 1L;
+    private final int tileSize;
+    private Maze maze;
 
-		for (int y = 0; y < maze.getHeight(); y++) {
-			for (int x = 0; x < maze.getWidth(); x++) {
-				Tile t = maze.getTile(x, y);
-				Color color = null;
-				
-				if (t.isStructure()) {
-					color = t.isGround() ? new Color(127, 255, 255) : new Color(255, 0, 0);
-					//color = t.isGround() ? new Color(255, 255, 255) : new Color(0, 0, 0);
-				}
-				else {
-					color = t.isGround() ? new Color(255, 255, 255) : new Color(0, 0, 0);
-				}
-				
-				paintTile(g, x, y, color);
-			}
-		}
-		
-		paintTile(g, maze.getCenterPoint(), new Color(255, 0, 255));
-		paintGridLayer(g);
-	}
-	
-	
-	private class CanvasListener implements MouseListener {
+    public MazeCanvas(Maze maze, int tileSize) {
+        this.maze = maze;
+        this.tileSize = tileSize;
+        setSize(maze.getWidth() * tileSize, maze.getHeight() * tileSize);
+    }
 
-		@Override
-		public void mouseClicked(MouseEvent e) {}
+    public void setMaze(Maze maze) {
+        this.maze = maze;
+        setSize(maze.getWidth() * tileSize, maze.getHeight() * tileSize);
 
-		@Override
-		public void mousePressed(MouseEvent e) {}
+        this.repaint();
+    }
 
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			repaint();
-		}
+    private void paintTile(Graphics g, int x, int y, Color color) {
+        int paintX = tileSize * x;
+        int paintY = tileSize * y;
 
-		@Override
-		public void mouseEntered(MouseEvent e) {}
+        g.setColor(color);
+        g.fillRect(paintX, paintY, tileSize, tileSize);
+    }
 
-		@Override
-		public void mouseExited(MouseEvent e) {}
-		
-	}
-	
+    private void paintTile(Graphics g, Point p, Color color) {
+        paintTile(g, p.x, p.y, color);
+    }
+
+    private void paintGridLayer(Graphics g) {
+        for (int y = 0; y < maze.getHeight(); y++) {
+            for (int x = 0; x < maze.getWidth(); x++) {
+                boolean isGuaranteedWall = x % 2 == 0 && y % 2 == 0;
+                boolean isGuaranteedGround = x % 2 == 1 && y % 2 == 1;
+
+                if (isGuaranteedWall) {
+                    paintTile(g, x, y, new Color(255, 255, 255, 50));
+                } else if (isGuaranteedGround) {
+                    paintTile(g, x, y, new Color(255, 255, 255, 210));
+                } else {
+                    paintTile(g, x, y, new Color(255, 255, 255, 127));
+                }
+            }
+        }
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        for (int y = 0; y < maze.getHeight(); y++) {
+            for (int x = 0; x < maze.getWidth(); x++) {
+                Tile t = maze.getTile(x, y);
+                Color color = null;
+
+                if (t.isStructure()) {
+                    color = t.isGround() ? new Color(127, 255, 255) : new Color(255, 0, 0);
+                    //color = t.isGround() ? new Color(255, 255, 255) : new Color(0, 0, 0);
+                } else {
+                    color = t.isGround() ? new Color(255, 255, 255) : new Color(0, 0, 0);
+                }
+
+                paintTile(g, x, y, color);
+            }
+        }
+
+        paintGridLayer(g);
+    }
 }

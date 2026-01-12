@@ -1,16 +1,16 @@
 package com.gmail.bluballsman.mazealgo.maze;
 
-import java.awt.Point;
-
 import com.gmail.bluballsman.mazealgo.structure.Structure;
 
 public class StructureSlot {
-	public final Point point;
-	public final Structure structure;
-	
-	public StructureSlot(Point point, Structure structure) {
-		this.point = point;
-		this.structure = structure;
-	}
-	
+    public final int x;
+    public final int y;
+    public final Structure structure;
+
+    public StructureSlot(int x, int y, Structure structure) {
+        this.x = x;
+        this.y = y;
+        this.structure = structure;
+    }
+
 }
