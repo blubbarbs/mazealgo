@@ -101,7 +101,7 @@ public class Maze {
                     return false;
 
                 char symbol = s.blueprint[sx][sy];
-                boolean overwrites = (symbol == '1' && tile.isGround()) || (symbol == '0' && tile.isGround());
+                boolean overwrites = (symbol == '1' && !tile.isGround()) || (symbol == '0' && tile.isGround());
 
                 if (!tile.isEditable() && overwrites)
                     return false;

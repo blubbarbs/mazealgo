@@ -25,7 +25,7 @@ public class AStarComparator implements Comparator<Tile> {
 
         double toStartP2 = calculateManhattan(p2, start);
         double toFinishP2 = calculateManhattan(p2, finish);
-        double combinedP2 = toStartP1 + toFinishP2;
+        double combinedP2 = toStartP2 + toFinishP2;
 
         if (combinedP1 > combinedP2) {
             return 1;
