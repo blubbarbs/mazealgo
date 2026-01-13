@@ -1,19 +1,30 @@
 package com.gmail.bluballsman.mazealgo.maze;
 
+import com.gmail.bluballsman.mazealgo.loc.Direction;
+import com.gmail.bluballsman.mazealgo.structure.Structure;
+
 import java.util.HashMap;
 
 public class Tile {
     private final Maze maze;
     public final int x;
     public final int y;
+    private Structure structure = null;
     private boolean isGround = false;
-    private boolean isStructure = false;
     private boolean isEditable = true;
 
     public Tile(Maze maze, int x, int y) {
         this.maze = maze;
         this.x = x;
         this.y = y;
+    }
+
+    public Tile getNeighbor(Direction direction) {
+        return maze.getTile(x + direction.X_OFFSET, y + direction.Y_OFFSET);
+    }
+
+    public Structure getStructure() {
+        return structure;
     }
 
     public boolean isEdge() {
@@ -25,7 +36,7 @@ public class Tile {
     }
 
     public boolean isStructure() {
-        return isStructure;
+        return structure != null;
     }
 
     public boolean isEditable() {
@@ -40,8 +51,8 @@ public class Tile {
         this.isGround = isGround;
     }
 
-    public void setStructure(boolean isStructure) {
-        this.isStructure = isStructure;
+    public void setStructure(Structure structure) {
+        this.structure = structure;
     }
 
     // Returns the "type code" for this tile. The type code is a representation of the surrounding tiles on the
@@ -50,10 +61,10 @@ public class Tile {
     // east, south, west. So a type code of 1010 means that the ground flag of the surrounding tiles matched this tile
     // in the north and south positions. Out of bounds tiles are counted as ground.
     public int getTypeCode() {
-        Tile north = maze.getTile(x, y + 1);
-        Tile east = maze.getTile(x + 1, y);
-        Tile south = maze.getTile(x, y - 1);
-        Tile west = maze.getTile(x - 1, y);
+        Tile north = getNeighbor(Direction.NORTH);
+        Tile east = getNeighbor(Direction.EAST);
+        Tile south = getNeighbor(Direction.SOUTH);
+        Tile west = getNeighbor(Direction.WEST);
 
         int typeCode = 0;
         typeCode += north != null && north.isGround == isGround ? 0b1000 : 0;

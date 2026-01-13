@@ -1,10 +1,8 @@
 package com.gmail.bluballsman.mazealgo;
 
 import com.gmail.bluballsman.mazealgo.maze.Maze;
-import com.gmail.bluballsman.mazealgo.maze.Tile;
 import com.gmail.bluballsman.mazealgo.structure.Structure;
 
-import java.awt.Canvas;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -20,27 +18,25 @@ public class Main {
 
         Structure center = new Structure(
                 """
-                        XXXXXXXXXXXXXXX
-                        X1111111111111X
-                        X1111111111111X
-                        X1111111111111X
-                        X1111111111111X
-                        X1111111111111X
-                        X1111111111111X
-                        X1111111111111X
-                        X1111111111111X
-                        X1111111111111X
-                        XXXXXXXXXXXXXXX
+                        ???????????????
+                        ?1111111111111?
+                        ?1111111111111?
+                        ?1111111111111?
+                        ?1111111111111?
+                        ?1111111111111?
+                        ?1111111111111?
+                        ?1111111111111?
+                        ?1111111111111?
+                        ?1111111111111?
+                        ???????????????
                         """);
         Structure room = new Structure(
                 """
-                        XXXXXXX
-                        X11111X
-                        X11111X
-                        X11111X
-                        X11111X
-                        X11111X
-                        XXXXXXX
+                        ???0?
+                        0111?
+                        ?111?
+                        ?1110
+                        ?0???
                         """);
         Structure deadEnd = new Structure(
                 """
@@ -61,22 +57,13 @@ public class Main {
 
         Maze maze = new Maze(width, height, millis);
 
-        Tile centerTile = maze.getCenterTile();
-
-        maze.placeStructure(centerTile.x, centerTile.y, center);
-
-        for (int i = 0; i < 3; i++) {
-            maze.generateStructure(room);
-        }
-        for (int i = 0; i < 16; i++) {
-            maze.generateStructure(deadEnd);
-        }
-        for (int i = 0; i < 3; i++) {
-            maze.generateStructure(hall);
-        }
+        maze.placeCenterStructure(center);
+        maze.generateStructure(room, 5);
+        maze.generateStructure(deadEnd, 15);
+        maze.generateStructure(hall, 5);
 
         maze.fillMaze(1, 1);
-        maze.knockDownWalls(12, .5);
+        maze.knockDownWalls(12, .25);
 
         return maze;
     }

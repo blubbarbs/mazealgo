@@ -1,13 +1,10 @@
 package com.gmail.bluballsman.mazealgo.maze;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.PriorityQueue;
-import java.util.Random;
-import java.util.Stack;
+import java.awt.*;
+import java.util.*;
 import java.util.function.Predicate;
 
+import com.gmail.bluballsman.mazealgo.loc.Direction;
 import com.gmail.bluballsman.mazealgo.pathfinding.AStarComparator;
 import com.gmail.bluballsman.mazealgo.structure.Structure;
 
@@ -18,8 +15,8 @@ public class Maze {
     protected Random random = new Random();
 
     public Maze(int width, int height) {
-		assert width % 4 == 3;
-		assert height % 4 == 3;
+		assert width % 2 == 1;
+		assert height % 2 == 1;
 
         this.width = width;
         this.height = height;
@@ -87,15 +84,12 @@ public class Maze {
     }
 
     public boolean doesStructureFit(int x, int y, Structure s) {
-        if (x - s.radiusX == 0 || x + s.radiusX >= width || y - s.radiusY == 0 ||  y + s.radiusY >= height)
+        if (x < 0 || x + s.width - 1 >= width || y < 0 ||  y + s.height - 1 >= height)
             return false;
 
-        int topLeftX = x - s.radiusX;
-        int topLeftY = y - s.radiusY;
-
-        for (int sy = 0; sy < s.height; sy += 2) {
-            for (int sx = 0; sx < s.width; sx += 2) {
-                Tile tile = this.getTile(topLeftX + sx, topLeftY + sy);
+        for (int sy = 0; sy < s.height; sy++) {
+            for (int sx = 0; sx < s.width; sx++) {
+                Tile tile = this.getTile(x + sx, y + sy);
 
                 if (tile == null || tile.isStructure())
                     return false;
@@ -112,11 +106,11 @@ public class Maze {
     }
 
     public ArrayList<StructureSlot> findValidStructureSlots(Structure s) {
-        ArrayList<StructureSlot> matches = new ArrayList<StructureSlot>();
+        ArrayList<StructureSlot> matches = new ArrayList<>();
 
         for (int rotations = 0; rotations < 4; rotations++) {
-            for (int y = 1; y < height; y += 2) {
-                for (int x = 1; x < width; x += 2) {
+            for (int y = 0; y < height; y += 2) {
+                for (int x = 0; x < width; x += 2) {
                     if (doesStructureFit(x, y, s))
                         matches.add(new StructureSlot(x, y, s));
                 }
@@ -128,35 +122,42 @@ public class Maze {
         return matches;
     }
 
-    public void placeStructure(int x, int y, Structure s) {
-        int topLeftX = x - s.radiusX;
-        int topLeftY = y - s.radiusY;
-
+    public void placeStructure(int topLeftX, int topLeftY, Structure s) {
         for (int sy = 0; sy < s.height; sy++) {
             for (int sx = 0; sx < s.width; sx++) {
                 Tile tile = this.getTile(topLeftX + sx, topLeftY + sy);
                 char symbol = s.blueprint[sx][sy];
 
-                tile.setStructure(true);
-
                 switch (symbol) {
                     case '0':
+                        tile.setStructure(s);
                         tile.setGround(false);
                         tile.setUneditable();
                         break;
                     case '1':
+                        tile.setStructure(s);
                         tile.setGround(true);
                         tile.setUneditable();
                         break;
                     case '?':
-                        tile.setGround(random.nextBoolean());
-                        tile.setUneditable();
+                        tile.setStructure(s);
                         break;
                     default:
                         break;
                 }
             }
         }
+    }
+
+    public void placeCenterStructure(Structure s) {
+        Tile center = getCenterTile();
+        int topLeftX = center.x - s.radiusX;
+        int topLeftY = center.y - s.radiusY;
+
+        topLeftX -= topLeftX % 2;
+        topLeftY -= topLeftY % 2;
+
+        placeStructure(topLeftX, topLeftY, s);
     }
 
     public void generateStructure(Structure s) {
@@ -170,7 +171,13 @@ public class Maze {
         StructureSlot structureSlot = slots.get(randomIndex);
         Structure selectedStructure = structureSlot.structure;
 
-        placeStructure(structureSlot.x, structureSlot.y, selectedStructure);
+        placeStructure(structureSlot.topLeftX, structureSlot.topLeftY, selectedStructure);
+    }
+
+    public void generateStructure(Structure s, int amt) {
+        for (int i = 0; i < amt; i++) {
+            generateStructure(s);
+        }
     }
 
     public void fillMaze(int xStart, int yStart) {
@@ -179,25 +186,39 @@ public class Maze {
         if (start == null)
             return;
 
+        HashSet<Tile> explored = new HashSet<>();
         Stack<Tile> path = new Stack<>();
-
+        explored.add(start);
         path.push(start);
         start.setGround(true);
 
         while (!path.isEmpty()) {
             Tile current = path.peek();
-            ArrayList<Tile> available = getSurroundingTiles(current.x, current.y, 2, t -> !t.isGround());
+            ArrayList<Direction> availableDirections = new ArrayList<>();
 
-            if (!available.isEmpty()) {
-                int chosenIndex = random.nextInt(available.size());
-                Tile next = available.get(chosenIndex);
-                int dx = (next.x - current.x) / 2;
-                int dy = (next.y - current.y) / 2;
-                Tile inBetween = this.getTile(current.x + dx, current.y + dy);
+            for (Direction direction : Direction.values()) {
+                Tile between = current.getNeighbor(direction);
+                if (between == null || (!between.isGround() && !between.isEditable()))
+                    continue;
 
-                inBetween.setGround(true);
+                Tile next = between.getNeighbor(direction);
+                if (next == null || explored.contains(next) || (!next.isGround() && !next.isEditable()))
+                    continue;
+
+                availableDirections.add(direction);
+            }
+
+            if (!availableDirections.isEmpty()) {
+                int chosenIndex = random.nextInt(availableDirections.size());
+                Direction chosenDirection = availableDirections.get(chosenIndex);
+                Tile between = current.getNeighbor(chosenDirection);
+                Tile next = between.getNeighbor(chosenDirection);
+
+                between.setGround(true);
                 next.setGround(true);
+
                 path.push(next);
+                explored.add(next);
             }
             else {
                 path.pop();

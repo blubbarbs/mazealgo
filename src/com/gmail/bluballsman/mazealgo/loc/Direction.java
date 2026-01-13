@@ -14,4 +14,17 @@ public enum Direction {
         Y_OFFSET = yOffset;
     }
 
+    static Direction fromXY(int x, int y) {
+        if (x == 0 && y == 1)
+            return NORTH;
+        else if (x == 1 && y == 0)
+            return EAST;
+        else if (x == 0 && y == -1)
+            return SOUTH;
+        else if (x == -1 && y == 0)
+            return WEST;
+        else
+            return null;
+    }
+
 }
