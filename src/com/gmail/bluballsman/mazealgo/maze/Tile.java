@@ -1,8 +1,5 @@
 package com.gmail.bluballsman.mazealgo.maze;
 
-import com.gmail.bluballsman.mazealgo.loc.Direction;
-import com.gmail.bluballsman.mazealgo.structure.Structure;
-
 import java.util.HashMap;
 
 public class Tile {

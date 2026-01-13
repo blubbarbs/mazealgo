@@ -1,7 +1,7 @@
 package com.gmail.bluballsman.mazealgo;
 
 import com.gmail.bluballsman.mazealgo.maze.Maze;
-import com.gmail.bluballsman.mazealgo.structure.Structure;
+import com.gmail.bluballsman.mazealgo.maze.Structure;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;

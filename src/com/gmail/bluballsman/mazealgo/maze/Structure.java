@@ -1,4 +1,4 @@
-package com.gmail.bluballsman.mazealgo.structure;
+package com.gmail.bluballsman.mazealgo.maze;
 
 public class Structure {
     public final int width;

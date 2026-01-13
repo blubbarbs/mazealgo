@@ -1,4 +1,4 @@
-package com.gmail.bluballsman.mazealgo.loc;
+package com.gmail.bluballsman.mazealgo.maze;
 
 public enum Direction {
     NORTH(0, 1),
